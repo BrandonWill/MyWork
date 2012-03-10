@@ -28,6 +28,20 @@ import util.Configuration;
 
 public class DwarfehFisher extends Script {
     boolean run = true;
+    private long startTime = System.currentTimeMillis();
+
+    private State state = State.FISHING;
+    private Mode mode = Mode.FLY_FISHING;
+
+    private int shrimpsDropped, anchoviesDropped, sardineDropped, herringDropped, pikeDropped, troutDropped, salmonDropped, lobsterDropped, tunaDropped, swordfishDropped;
+    private int count = 1, countTo = 0, invIndex;
+
+    private int fishingIntervalBase = 15, fishingIntervalRandom = 10;
+    private int compareImages = 4, compareInterval = 600, compareThreshold = 300;
+    private int fishingColor = 8556460, fishingThreshold = 10*10;
+    private int mouseSpeed = 2;
+
+    private volatile boolean isSelecting = true;
 
     private enum State {
         LOOKING_FOR_SPOT,
@@ -44,7 +58,6 @@ public class DwarfehFisher extends Script {
     }
 
     public boolean onStart() {
-        log("Text there: " +findString(loggedOut, null, null));
         run = true;
         login.start();
         SwingUtilities.invokeLater(new Runnable() {
@@ -189,16 +202,11 @@ public class DwarfehFisher extends Script {
             }
         });
 
-//        Camera.moveUp(3000);
-
         if (mode == null) {
             return false;
         }
 
-//        Mouse.setSpeed(mouseSpeed);
-
         startTime = System.currentTimeMillis();
-//        println("Dwarfeh's Fisher started");
 
         return true;
     }
@@ -210,23 +218,6 @@ public class DwarfehFisher extends Script {
         run = false;
         log("Dwarfeh's Fisher Ended");
     }
-
-    private long startTime = System.currentTimeMillis();
-
-    private State state = State.FISHING;
-    private Mode mode = Mode.FLY_FISHING;
-
-    private int shrimpsDropped, anchoviesDropped, sardineDropped, herringDropped, pikeDropped, troutDropped, salmonDropped, lobsterDropped, tunaDropped, swordfishDropped;
-    private int count = 1, countTo = 0, invIndex;
-
-    // paramters
-
-    private int fishingIntervalBase = 15, fishingIntervalRandom = 10;
-    private int compareImages = 4, compareInterval = 600, compareThreshold = 300;
-    private int fishingColor = 8556460, fishingThreshold = 10*10;
-    private int mouseSpeed = 2;
-
-    private volatile boolean isSelecting = true;
 
     @Override
     public int loop() {
@@ -310,18 +301,6 @@ public class DwarfehFisher extends Script {
                         } else {
                             visitedPoints.add(p);
                         }
-                    }
-
-                    if (Math.random() > 0.5) {
-//                        Camera.rotateRight(500 + (int)(Math.random()*1000));
-                    } else {
-//                        Camera.rotateLeft(500 + (int)(Math.random()*1000));
-                    }
-
-                    if (Math.random() > 0.5) {
-//                        Camera.moveUp(500 + (int)(Math.random()*1000));
-                    } else {
-//                        Camera.moveDown(500 + (int)(Math.random()*1000));
                     }
 
                     break;
