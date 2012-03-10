@@ -1,5 +1,6 @@
 
 
+import api.methods.ColorUtil;
 import api.methods.Inventory;
 import api.methods.RSText;
 
@@ -172,6 +173,38 @@ class NOTREALCLASS_Inventory {
                 for (int i = 0; i < 28; i++) {
                     if (!api.methods.Inventory.getSlotAt(i).isEmpty()) {
                         api.methods.Inventory.doAction(i, i <= 23 ? 2 : 1);
+                    }
+                }
+            }
+        }
+
+        /**
+         *
+         * @param centerColor Drops all except the given center color.
+         * @param tolerance amount to choose between colors to drop
+         */
+        public static void dropAllExcept(Color centerColor, int tolerance) {
+            if (open()) {
+                for (int i = 0; i < 28; i++) {
+                    if (!api.methods.Inventory.getSlotAt(i).isEmpty() && ColorUtil.areColorsWithinTolerance(api.methods.Inventory.getSlotAt(i).getCenterColor(), centerColor, tolerance)) {
+                        api.methods.Inventory.doAction(i, i <= 23 ? 2 : 1);
+                    }
+                }
+            }
+        }
+
+        /**
+         *
+         * @param tolerance amount to choose between colors to drop
+         * @param colors Drops all except the given center colors.
+         */
+        public static void dropAllExcept( int tolerance, Color... colors) {
+            if (open()) {
+                for (int i = 0; i < 28; i++) {
+                    for (Color a : colors) {
+                        if (!api.methods.Inventory.getSlotAt(i).isEmpty() && ColorUtil.areColorsWithinTolerance(api.methods.Inventory.getSlotAt(i).getCenterColor(), a, tolerance)) {
+                            api.methods.Inventory.doAction(i, i <= 23 ? 2 : 1);
+                        }
                     }
                 }
             }
