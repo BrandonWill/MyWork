@@ -117,99 +117,6 @@ class NOTREALCLASS_Inventory {
             this.index = index;
             this.bounds = bounds;
         }
-        
-        /**
-         * This allows more complex algorithms to be
-         * developed in search and exclusion methods
-         * @return All of the slot bounds
-         */
-        public static Rectangle[] getAllSlotBounds() {
-            Rectangle[] a = new Rectangle[28];
-            int i = 0;
-            for (int column = 0; column < 4; column++) {
-                for (int row = 0; row < 7; row++) {
-                    a[i] = getInventorySlot(column, row);
-                    i++;
-                }
-            }
-            return a;
-        }
-
-        /**
-         *
-         * @param slotNumber Drops all except the given slot number. 0-27
-         */
-        public static void dropAllExcept(int slotNumber) {
-            if (open()) {
-                for (int i = 0; i < 28; i++) {
-                    if (i != slotNumber && !api.methods.Inventory.getSlotAt(i).isEmpty()) {
-                        api.methods.Inventory.doAction(i, i <= 23 ? 2 : 1);
-                    }
-                }
-            }
-        }
-
-        /**
-         *
-         * @param slotNumber Drops all except the given slot numbers. 0-27
-         */
-        public static void dropAllExcept(int... slotNumber) {
-            if (open()) {
-                for (int i = 0; i < 28; i++) {
-                    for (int a : slotNumber) {
-                        if (i != a && !api.methods.Inventory.getSlotAt(i).isEmpty()) {
-                            api.methods.Inventory.doAction(i, i <= 23 ? 2 : 1);
-                        }
-                    }
-                }
-            }
-        }
-
-        /**
-         * Drops all inventory items.
-         */
-        public static void dropAll() {
-            if (open()) {
-                for (int i = 0; i < 28; i++) {
-                    if (!api.methods.Inventory.getSlotAt(i).isEmpty()) {
-                        api.methods.Inventory.doAction(i, i <= 23 ? 2 : 1);
-                    }
-                }
-            }
-        }
-
-        /**
-         *
-         * @param centerColor Drops all except the given center color.
-         * @param tolerance amount to choose between colors to drop
-         */
-        public static void dropAllExcept(Color centerColor, int tolerance) {
-            if (open()) {
-                for (int i = 0; i < 28; i++) {
-                    if (!api.methods.Inventory.getSlotAt(i).isEmpty() && ColorUtil.areColorsWithinTolerance(api.methods.Inventory.getSlotAt(i).getCenterColor(), centerColor, tolerance)) {
-                        api.methods.Inventory.doAction(i, i <= 23 ? 2 : 1);
-                    }
-                }
-            }
-        }
-
-        /**
-         *
-         * @param tolerance amount to choose between colors to drop
-         * @param colors Drops all except the given center colors.
-         */
-        public static void dropAllExcept(int tolerance, Color... colors) {
-            if (open()) {
-                for (int i = 0; i < 28; i++) {
-                    for (Color a : colors) {
-                        if (!api.methods.Inventory.getSlotAt(i).isEmpty() && ColorUtil.areColorsWithinTolerance(api.methods.Inventory.getSlotAt(i).getCenterColor(), a, tolerance)) {
-                            api.methods.Inventory.doAction(i, i <= 23 ? 2 : 1);
-                        }
-                    }
-                }
-            }
-        }
-
     }
 
     /**
@@ -229,6 +136,112 @@ class NOTREALCLASS_Inventory {
     private static int getYValue(int rowNumber) {
         return 212 + rowNumber * 36;
     }
+
+    /**
+     * This allows more complex algorithms to be
+     * developed in search and exclusion methods
+     * @return All of the slot bounds
+     */
+    public static Rectangle[] getAllSlotBounds() {
+        Rectangle[] a = new Rectangle[28];
+        int i = 0;
+        for (int column = 0; column < 4; column++) {
+            for (int row = 0; row < 7; row++) {
+                a[i] = getInventorySlot(column, row);
+                i++;
+            }
+        }
+        return a;
+    }
+
+    /**
+     *
+     * @param slotNumber Drops all except the given slot number. 0-27
+     */
+    public static void dropAllExcept(int slotNumber) {
+        if (open()) {
+            for (int i = 0; i < 28; i++) {
+                if (i != slotNumber && !api.methods.Inventory.getSlotAt(i).isEmpty()) {
+                    api.methods.Inventory.doAction(i, i <= 23 ? 2 : 1);
+                }
+            }
+        }
+    }
+
+    /**
+     *
+     * @param slotNumber Drops all except the given slot numbers. 0-27
+     */
+    public static void dropAllExcept(int... slotNumber) {
+        if (open()) {
+            for (int i = 0; i < 28; i++) {
+                for (int a : slotNumber) {
+                    if (i != a && !api.methods.Inventory.getSlotAt(i).isEmpty()) {
+                        api.methods.Inventory.doAction(i, i <= 23 ? 2 : 1);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Drops all inventory items.
+     */
+    public static void dropAll() {
+        if (open()) {
+            for (int i = 0; i < 28; i++) {
+                if (!api.methods.Inventory.getSlotAt(i).isEmpty()) {
+                    api.methods.Inventory.doAction(i, i <= 23 ? 2 : 1);
+                }
+            }
+        }
+    }
+
+    /**
+     *
+     * @param centerColor Drops all except the given center color.
+     * @param tolerance amount to choose between colors to drop
+     */
+    public static void dropAllExcept(Color centerColor, int tolerance) {
+        if (open()) {
+            for (int i = 0; i < 28; i++) {
+                if (!api.methods.Inventory.getSlotAt(i).isEmpty() && ColorUtil.areColorsWithinTolerance(api.methods.Inventory.getSlotAt(i).getCenterColor(), centerColor, tolerance)) {
+                    api.methods.Inventory.doAction(i, i <= 23 ? 2 : 1);
+                }
+            }
+        }
+    }
+
+    /**
+     *
+     * @param tolerance amount to choose between colors to drop
+     * @param colors Drops all except the given center colors.
+     */
+    public static void dropAllExcept(int tolerance, Color... colors) {
+        if (open()) {
+            for (int i = 0; i < 28; i++) {
+                for (Color a : colors) {
+                    if (!api.methods.Inventory.getSlotAt(i).isEmpty() && ColorUtil.areColorsWithinTolerance(api.methods.Inventory.getSlotAt(i).getCenterColor(), a, tolerance)) {
+                        api.methods.Inventory.doAction(i, i <= 23 ? 2 : 1);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     *
+     * @param color The center color of the item you would like to find the slot of
+     * @return Returns the first slot that contains the desired color; if any.
+     */
+    public static Inventory.Slot getSlotWithCenterColor(Color color) {
+        for (Inventory.Slot a : Inventory.Slot.values()) {
+            if (a.getCenterColor().equals(color)) {
+                return a;
+            }
+        }
+        return null;
+    }    
 
     /**
      *
