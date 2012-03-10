@@ -54,7 +54,17 @@ public class Stats extends Script {
     */
     //row 3
     public static final Rectangle MINING_RECTANGLE = new Rectangle(673, 211, 58, 24);
-
+    public static final Rectangle SMITHING_RECTANGLE = new Rectangle(673, 239, 58, 24);
+    public static final Rectangle FISHING_RECTANGLE = new Rectangle(673, 267, 58, 24);
+    public static final Rectangle COOKING_RECTANGLE = new Rectangle(673, 295, 58, 24);
+    public static final Rectangle FIREMAKING_RECTANGLE = new Rectangle(673, 323, 58, 24);
+    public static final Rectangle WOODCUTTING_RECTANGLE = new Rectangle(673, 351, 58, 24);
+    public static final Rectangle FARMING_RECTANGLE = new Rectangle(673, 379, 58, 24);
+    /* Not Used:
+    public static final Rectangle SUMMONING_RECTANGLE = new Rectangle(673, 407, 58, 24);
+     */
+    //TODO Look for rest of stat text that is above rather than below. The "not used"
+    //TODO write methods to make life easier for scripters
 
 
 
@@ -65,11 +75,11 @@ public class Stats extends Script {
 
     @Override
     public int loop() {
-        Mouse.move((int) stats.MINING.statRect.getCenterX(), (int) stats.MINING.statRect.getCenterY());
-        log("Found level: " + RSText.findString(stats.MINING.levelRect,null, null));
-//        log("Found Current xp: " +RSText.findString(stats.CONSTITUTION.currentXP ,null, null));
-//        log("Found xp to lvl: " +RSText.findString(stats.CONSTITUTION.nextLevel, null, null));
-//        log("Found remainder: " +RSText.findString(stats.CONSTITUTION.remainder, null, null));
+        Mouse.move((int) stats.SMITHING.statRect.getCenterX(), (int) stats.SMITHING.statRect.getCenterY());
+        log("Found level: " + RSText.findString(stats.SMITHING.levelRect,null, null));
+        log("Found Current xp: " +RSText.findString(stats.SMITHING.currentXP ,null, null));
+        log("Found xp to lvl: " +RSText.findString(stats.SMITHING.nextLevel, null, null));
+        log("Found remainder: " +RSText.findString(stats.SMITHING.remainder, null, null));
         return 4000;
     }
 
@@ -157,10 +167,46 @@ public class Stats extends Script {
         //row 3
 
         MINING(MINING_RECTANGLE,
-                new Rectangle((int)SLAYER_RECTANGLE.x - 110, (int)SLAYER_RECTANGLE.getCenterY()+38, 150, 23),
-                new Rectangle((int)SLAYER_RECTANGLE.x - 110, (int)SLAYER_RECTANGLE.getCenterY()+48, 150, 23),
-                new Rectangle((int)SLAYER_RECTANGLE.x - 110, (int)SLAYER_RECTANGLE.getCenterY()+65, 150, 23),
-                new Rectangle((int)SLAYER_RECTANGLE.x - 110, (int)SLAYER_RECTANGLE.getCenterY()+75, 150, 23));
+                new Rectangle((int)MINING_RECTANGLE.x - 110, (int)MINING_RECTANGLE.getCenterY()+38, 175, 23),
+                new Rectangle((int)MINING_RECTANGLE.x - 110, (int)MINING_RECTANGLE.getCenterY()+48, 175, 23),
+                new Rectangle((int)MINING_RECTANGLE.x - 110, (int)MINING_RECTANGLE.getCenterY()+65, 175, 23),
+                new Rectangle((int)MINING_RECTANGLE.x - 110, (int)MINING_RECTANGLE.getCenterY()+80, 175, 23)),
+
+        SMITHING(SMITHING_RECTANGLE,
+                new Rectangle((int)SMITHING_RECTANGLE.x - 110, (int)SMITHING_RECTANGLE.getCenterY()+38, 175, 23),
+                new Rectangle((int)SMITHING_RECTANGLE.x - 110, (int)SMITHING_RECTANGLE.getCenterY()+48, 175, 23),
+                new Rectangle((int)SMITHING_RECTANGLE.x - 110, (int)SMITHING_RECTANGLE.getCenterY()+65, 175, 23),
+                new Rectangle((int)SMITHING_RECTANGLE.x - 110, (int)SMITHING_RECTANGLE.getCenterY()+80, 175, 23)),
+
+        FISHING(FISHING_RECTANGLE,
+                new Rectangle((int)FISHING_RECTANGLE.x - 110, (int)FISHING_RECTANGLE.getCenterY()+38, 175, 23),
+                new Rectangle((int)FISHING_RECTANGLE.x - 110, (int)FISHING_RECTANGLE.getCenterY()+48, 175, 23),
+                new Rectangle((int)FISHING_RECTANGLE.x - 110, (int)FISHING_RECTANGLE.getCenterY()+65, 175, 23),
+                new Rectangle((int)FISHING_RECTANGLE.x - 110, (int)FISHING_RECTANGLE.getCenterY()+80, 175, 23)),
+
+        COOKING(COOKING_RECTANGLE,
+                new Rectangle((int)COOKING_RECTANGLE.x - 110, (int)COOKING_RECTANGLE.getCenterY()+38, 175, 23),
+                new Rectangle((int)COOKING_RECTANGLE.x - 110, (int)COOKING_RECTANGLE.getCenterY()+48, 175, 23),
+                new Rectangle((int)COOKING_RECTANGLE.x - 110, (int)COOKING_RECTANGLE.getCenterY()+65, 175, 23),
+                new Rectangle((int)COOKING_RECTANGLE.x - 110, (int)COOKING_RECTANGLE.getCenterY()+80, 175, 23)),
+
+        FIREMAKING(FIREMAKING_RECTANGLE,
+                new Rectangle((int)FIREMAKING_RECTANGLE.x - 110, (int)FIREMAKING_RECTANGLE.getCenterY()+38, 175, 23),
+                new Rectangle((int)FIREMAKING_RECTANGLE.x - 110, (int)FIREMAKING_RECTANGLE.getCenterY()+48, 175, 23),
+                new Rectangle((int)FIREMAKING_RECTANGLE.x - 110, (int)FIREMAKING_RECTANGLE.getCenterY()+65, 175, 23),
+                new Rectangle((int)FIREMAKING_RECTANGLE.x - 110, (int)FIREMAKING_RECTANGLE.getCenterY()+80, 175, 23)),
+
+        WOODCUTTING(WOODCUTTING_RECTANGLE,
+                new Rectangle((int)WOODCUTTING_RECTANGLE.x - 110, (int)WOODCUTTING_RECTANGLE.getCenterY()+38, 175, 23),
+                new Rectangle((int)WOODCUTTING_RECTANGLE.x - 110, (int)WOODCUTTING_RECTANGLE.getCenterY()+48, 175, 23),
+                new Rectangle((int)WOODCUTTING_RECTANGLE.x - 110, (int)WOODCUTTING_RECTANGLE.getCenterY()+65, 175, 23),
+                new Rectangle((int)WOODCUTTING_RECTANGLE.x - 110, (int)WOODCUTTING_RECTANGLE.getCenterY()+80, 175, 23)),
+
+        FARMING(FARMING_RECTANGLE,
+                new Rectangle((int)FARMING_RECTANGLE.x - 110, (int)FARMING_RECTANGLE.getCenterY()+38, 175, 23),
+                new Rectangle((int)FARMING_RECTANGLE.x - 110, (int)FARMING_RECTANGLE.getCenterY()+48, 175, 23),
+                new Rectangle((int)FARMING_RECTANGLE.x - 110, (int)FARMING_RECTANGLE.getCenterY()+65, 175, 23),
+                new Rectangle((int)FARMING_RECTANGLE.x - 110, (int)FARMING_RECTANGLE.getCenterY()+80, 175, 23));
 
         public Rectangle statRect;
         public Rectangle levelRect;
@@ -185,12 +231,12 @@ public class Stats extends Script {
         g.setColor(Color.yellow);
         if (Mouse.getLocation() != null) {
             Rectangle text = new Rectangle(Mouse.getLocation().x +10, Mouse.getLocation().y+20, 150, 50);
-            g.drawRect(MINING_RECTANGLE.x, MINING_RECTANGLE.y, MINING_RECTANGLE.width, MINING_RECTANGLE.height);
+            g.drawRect(SMITHING_RECTANGLE.x, SMITHING_RECTANGLE.y, SMITHING_RECTANGLE.width, SMITHING_RECTANGLE.height);
 //            g.drawRect(Mouse.getLocation().x +11, Mouse.getLocation().y+40, 150, 18);
-//            g.drawRect(stats.CONSTITUTION.levelRect.x, stats.CONSTITUTION.levelRect.y, stats.CONSTITUTION.levelRect.width, stats.CONSTITUTION.levelRect.height);
-//            g.drawRect(stats.CONSTITUTION.currentXP.x, stats.CONSTITUTION.currentXP.y, stats.CONSTITUTION.currentXP.width, stats.CONSTITUTION.currentXP.height);
-//            g.drawRect(stats.CONSTITUTION.nextLevel.x, stats.CONSTITUTION.nextLevel.y, stats.CONSTITUTION.nextLevel.width, stats.CONSTITUTION.nextLevel.height);
-//            g.drawRect(stats.CONSTITUTION.remainder.x, stats.CONSTITUTION.remainder.y, stats.CONSTITUTION.remainder.width, stats.CONSTITUTION.remainder.height);
+//            g.drawRect(stats.MINING.levelRect.x, stats.MINING.levelRect.y, stats.MINING.levelRect.width, stats.MINING.levelRect.height);
+//            g.drawRect(stats.MINING.currentXP.x, stats.MINING.currentXP.y, stats.MINING.currentXP.width, stats.MINING.currentXP.height);
+//            g.drawRect(stats.MINING.nextLevel.x, stats.MINING.nextLevel.y, stats.MINING.nextLevel.width, stats.MINING.nextLevel.height);
+//            g.drawRect(stats.MINING.remainder.x, stats.MINING.remainder.y, stats.MINING.remainder.width, stats.MINING.remainder.height);
 //            g.setColor(Color.pink);
 //            g.drawRect(Mouse.getLocation().x +11, Mouse.getLocation().y+40, 150, 20);
 //          
