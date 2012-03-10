@@ -80,17 +80,17 @@ public class DwarfehFletcher extends Script {
         return 0;
     }
 
-    public void useItem(Color color1, Color color2) {
-        //use item 2
-        Point a = Inventory.getSlotWithColor(color1).getCenter();
-        Point b = Inventory.getSlotWithColor(color2).getCenter();
-        Mouse.click(a, 3, 3);
-        sleep(random(400, 600));
-        Mouse.click(b, 3, 3);
-        sleep(random(400, 600));
-        Mouse.click(new Point(259, 428), 3, 3);
-        sleep(random(500, 700));
-    }
+//    public void useItem(Color color1, Color color2) {
+//        //use item 2
+//        Point a = Inventory.getSlotWithColor(color1).getCenter();
+//        Point b = .Inventory.getSlotWithColor(color2).getCenter();
+//        Mouse.click(a, 3, 3);
+//        sleep(random(400, 600));
+//        Mouse.click(b, 3, 3);
+//        sleep(random(400, 600));
+//        Mouse.click(new Point(259, 428), 3, 3);
+//        sleep(random(500, 700));
+//    }
 
     public boolean bankOpen() {
         if (Bank.isOpen()) {

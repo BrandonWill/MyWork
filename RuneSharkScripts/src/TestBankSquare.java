@@ -74,7 +74,7 @@ public class TestBankSquare extends Script {
     public boolean closeToBankers() {
         Point c = ColorUtil.findColorWithinTolerance(bankerColor, 5, bankers);
         if (c != null) {
-            Mouse.moveMouse(c.x, c.y);
+            Mouse.move(c.x, c.y);
             String optionText = RSText.getOptionsText();
             if (optionText.contains("Bank")) {
                 Mouse.click(c);
@@ -155,7 +155,7 @@ public class TestBankSquare extends Script {
                 }
             }
             if (toClick != null)
-                Mouse.moveMouse(toClick.x, toClick.y);
+                Mouse.move(toClick.x, toClick.y);
             String optionText = RSText.getOptionsText();
             atBank = optionText.contains("Bank");
             if (atBank)

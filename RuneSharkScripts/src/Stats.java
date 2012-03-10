@@ -65,7 +65,7 @@ public class Stats extends Script {
 
     @Override
     public int loop() {
-        Mouse.moveMouse((int) stats.MINING.statRect.getCenterX(), (int) stats.MINING.statRect.getCenterY());
+        Mouse.move((int) stats.MINING.statRect.getCenterX(), (int) stats.MINING.statRect.getCenterY());
         log("Found level: " + RSText.findString(stats.MINING.levelRect,null, null));
 //        log("Found Current xp: " +RSText.findString(stats.CONSTITUTION.currentXP ,null, null));
 //        log("Found xp to lvl: " +RSText.findString(stats.CONSTITUTION.nextLevel, null, null));

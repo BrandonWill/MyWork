@@ -442,7 +442,7 @@ public class DwarfehFisher extends Script {
                 if (optionsText.contains("Net") || optionsText.contains("Lure")) {
                     Point currentLocation = Mouse.getLocation();
                     Mouse.click(currentLocation, false);
-                    Mouse.moveMouse(currentLocation.x + (int)(Math.random() * 40) - 20, currentLocation.y + 45 + (int)(Math.random() * 6) - 3);
+                    Mouse.move(currentLocation.x + (int)(Math.random() * 40) - 20, currentLocation.y + 45 + (int)(Math.random() * 6) - 3);
                     sleep(40 + (int)(Math.random() * 40));
                     Point cl = Mouse.getLocation();
                     Mouse.click(cl, true);
@@ -471,7 +471,7 @@ public class DwarfehFisher extends Script {
                 if (optionsText.contains("Cage")) {
                     Point currentLocation = Mouse.getLocation();
                     Mouse.click(currentLocation, false);
-                    Mouse.moveMouse(currentLocation.x + (int)(Math.random() * 40) - 20, currentLocation.y + 45 + (int)(Math.random() * 6) - 3);
+                    Mouse.move(currentLocation.x + (int)(Math.random() * 40) - 20, currentLocation.y + 45 + (int)(Math.random() * 6) - 3);
                     sleep(40 + (int)(Math.random() * 40));
                     Point cl = Mouse.getLocation();
                     Mouse.click(cl, true);

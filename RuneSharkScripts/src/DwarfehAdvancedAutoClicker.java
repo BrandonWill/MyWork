@@ -104,7 +104,7 @@ public class DwarfehAdvancedAutoClicker extends Script implements KeyListener, M
                     if (!Finished) {
                         //Goes through the arrays
                         for (int i = 0; i < rowCount;) {
-                            Mouse.moveMouse(MouseX1[i], MouseY1[i]);
+                            Mouse.move(MouseX1[i], MouseY1[i]);
                             for (int t = 0; t < timesToClick[i] && MouseX1[i] > 1 && MouseY1[i] > 1;) {
                                 Mouse.click(MouseX1[i], MouseY1[i], true);
                                 sleep(delayTime[i]);
@@ -119,7 +119,7 @@ public class DwarfehAdvancedAutoClicker extends Script implements KeyListener, M
                 }
                 if (Looping) {
                     for (int i = 0; i < rowCount;) {
-                        Mouse.moveMouse(MouseX1[i], MouseY1[i]);
+                        Mouse.move(MouseX1[i], MouseY1[i]);
                         for (int t = 0; t < timesToClick[i];) {
                             Mouse.click(MouseX1[i], MouseY1[i], true);
                             sleep(delayTime[i]);

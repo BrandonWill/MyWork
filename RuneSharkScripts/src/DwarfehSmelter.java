@@ -58,7 +58,7 @@ public class DwarfehSmelter extends Script {
         if (realBankerColorFound && nearBanker()) {
             return true;
         }
-        Mouse.moveMouse(pointToOpenBank.x, pointToOpenBank.y);
+        Mouse.move(pointToOpenBank.x, pointToOpenBank.y);
         String optionText = OCRUtil.getOptionsText();
 
         if (optionText.contains("Bank")) {
@@ -90,7 +90,7 @@ public class DwarfehSmelter extends Script {
         if (isSmithing()) {
             return true;
         }
-        Mouse.moveMouse(furnacePoint.x, furnacePoint.y);
+        Mouse.move(furnacePoint.x, furnacePoint.y);
         String optionText = OCRUtil.getOptionsText();
         return optionText.contains("Smelt");
         //return !isOpen() && areColorsClose(furnaceColor, ColorUtil.getColor(furnacePoint), 25);
@@ -111,14 +111,14 @@ public class DwarfehSmelter extends Script {
         sleep(1000);
         walkedToFurnace = false;
         walkedToBank = true;
-        Mouse.moveMouse(605 +incX, 156 +incY);
+        Mouse.move(605 +incX, 156 +incY);
         Mouse.click();
     }
 
     public void walkToFurnace() {
         walkedToBank = false;
         walkedToFurnace = true;
-        Mouse.moveMouse(648, 15);
+        Mouse.move(648, 15);
         sleep(400);
         Mouse.click();
     }
@@ -138,10 +138,10 @@ public class DwarfehSmelter extends Script {
     }
 
     public void openBank() {
-        Mouse.moveMouse(pointToOpenBank.x, pointToOpenBank.y);
+        Mouse.move(pointToOpenBank.x, pointToOpenBank.y);
         String optionText = OCRUtil.getOptionsText();
         if (!optionText.contains("Bank")) {
-            Mouse.moveMouse(pointToOpenBank.x-5, pointToOpenBank.y+20);
+            Mouse.move(pointToOpenBank.x-5, pointToOpenBank.y+20);
             optionText = OCRUtil.getOptionsText();
             if (!optionText.contains("Bank")) {
                 return;
@@ -165,7 +165,7 @@ public class DwarfehSmelter extends Script {
     public void clickFurnace() {
         Mouse.clickMouse(furnacePoint.x, furnacePoint.y, true);
         sleep(1000);
-        Mouse.moveMouse(291, 426);
+        Mouse.move(291, 426);
         Mouse.click();
     }
 
@@ -281,7 +281,7 @@ public class DwarfehSmelter extends Script {
                 if (optionText.contains("Smelt")) {
                     Mouse.click();
                 } else {
-                    Mouse.moveMouse(Mouse.getLocation().x+30, Mouse.getLocation().y+50);
+                    Mouse.move(Mouse.getLocation().x+30, Mouse.getLocation().y+50);
                     sleep(300);
                     optionText = OCRUtil.getOptionsText();
                     if (optionText.contains("Smelt")) {

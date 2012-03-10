@@ -198,7 +198,7 @@ class NOTREALCLASS_Inventory {
          * @param tolerance amount to choose between colors to drop
          * @param colors Drops all except the given center colors.
          */
-        public static void dropAllExcept( int tolerance, Color... colors) {
+        public static void dropAllExcept(int tolerance, Color... colors) {
             if (open()) {
                 for (int i = 0; i < 28; i++) {
                     for (Color a : colors) {
