@@ -207,7 +207,6 @@ public class DwarfehFisher extends Script {
         }
 
         startTime = System.currentTimeMillis();
-
         return true;
     }
 
