@@ -96,22 +96,22 @@ public class DwarfehFletcher extends Script {
         if (Bank.isOpen()) {
             return true;
         }
-//        Mouse.move();
+        Mouse.move(220, 159);
         String text = RSText.getOptionsText().toLowerCase();
         if (text.contains("bank")) {
-//            Mouse.click();
+            Mouse.click(220, 159);
             sleep(random(500, 1000));
         }
         return Bank.isOpen();
-        //TODO GET THIS DONE
     }
 
     public boolean bank() {
         if (!Bank.isOpen()) {
-            return bankOpen();
+            bankOpen();
+            bank();
         }
         if (withdrawCol1 == 1) {
-            depositAllFromSlot(1);
+            depositAllExcept(1);
         } else {
             depositAll();
         }
@@ -125,25 +125,30 @@ public class DwarfehFletcher extends Script {
             Bank.close();
         }
         if (Inventory.isFull() && getAmount(col1) > withdrawCol1) {
-            //TODO GET ACTION NUMBER
-//            Inventory.doAction(Inventory.getSlotWithColor(col1), );
+            Inventory.doAction(getSlotWithCenterColor(col1), 6);
         }
         if (Inventory.isFull() && getAmount(col2) > withdrawCol2) {
-            //TODO GET ACTION NUMBER
-//            Inventory.doAction(Inventory.getSlotWithColor(col2), );
+            Inventory.doAction(getSlotWithCenterColor(col2), 6);
         }
-        //TODO finish banking method
+
         return getAmount(col1) == withdrawCol1 && getAmount(col2) == withdrawCol2 && !Bank.isOpen();
     }
 
-    public boolean depositAllFromSlot(int slotNumber) {
-//        Mouse.click(Inventory.getSlotAt(slotNumber).getCenter(), false);
-        //TODO GET ACTION NUMBER
-//        Inventory.doAction(slotNumber, );
+    public boolean depositAllExcept(int slotNumber) {
+        Inventory.doAction(slotNumber, 6);
         sleep(random(800, 1000));
         return getAmount(Inventory.getSlotAt(slotNumber).getCenterColor()) == 0;
 
     }
+    
+    public Inventory.Slot getSlotWithCenterColor(Color color) {
+        for (Inventory.Slot a : Inventory.Slot.values()) {
+            if (a.getCenterColor().equals(color)) {
+                return a;
+            }
+        }
+        return null;
+    } 
 
     public void withdrawItem1(int amount) {
         Mouse.clickMouse(52, 105, false);
@@ -205,7 +210,7 @@ public class DwarfehFletcher extends Script {
     public int getAmount(Color colors) {
         int amount = 0;
         for (int i = 0; i < 28; i++) {
-            if (areColorsClose(Inventory.getSlotAt(i).getCenterColor(), colors, 10)) {
+            if (areColorsClose(Inventory.getSlotAt(i).getCenterColor(), colors, 0)) {
                 amount += 1;
             }
         }
