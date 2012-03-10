@@ -1,5 +1,6 @@
 
 
+import api.methods.Inventory;
 import api.methods.RSText;
 
 import java.awt.*;
@@ -426,6 +427,25 @@ class RANDOM_CODES {
         } catch (Exception e) {
         }
         return 0;
+    }
+
+
+    public int getAmount(Color colors) {
+        int amount = 0;
+        for (int i = 0; i < 28; i++) {
+            if (areColorsClose(api.methods.Inventory.getSlotAt(i).getCenterColor(), colors, 10)) {
+                amount += 1;
+            }
+        }
+        return amount;
+    }
+
+    /*
+    This was used to entirely revamp the bot to be a lot more stable.
+    I didn't have time to rewrite it, but another developer did; I started the process.
+     */
+    public boolean areColorsClose(Color color1, Color color2, int toleranceAmount) {
+        return (color1.getRed() - color2.getRed() < toleranceAmount && color1.getRed() - color2.getRed() > -toleranceAmount) && (color1.getBlue() - color2.getBlue() < toleranceAmount && color1.getBlue() - color2.getBlue() > -toleranceAmount) && (color1.getGreen() - color2.getGreen() < toleranceAmount && color1.getGreen() - color2.getGreen() > -toleranceAmount);
     }
 
     //Code for obtaining xp gained. Too lazy to shorten:
