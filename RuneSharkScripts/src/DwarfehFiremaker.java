@@ -94,11 +94,6 @@ public class DwarfehFiremaker extends Script implements MouseListener {
     public int loop() {
         try {
         if (MOUSESPEED == 0){
-            if (!didDo) {
-//                Game.clickCompass();
-//                Camera.moveUp(random(2000, 2200));
-                didDo = true;
-            }
             return 300;
         }
 
@@ -135,7 +130,7 @@ public class DwarfehFiremaker extends Script implements MouseListener {
             STATE = "We don't have a tinderbox";
         }
         AntiBan();
-        }    catch (Exception e) {}
+        }    catch (Exception ignored) {}
         return 1;
     }
 
@@ -307,19 +302,6 @@ public class DwarfehFiremaker extends Script implements MouseListener {
         }
     }
 
-//    private Point LogPos() {
-//        LOGLOCS = ImageUtil.getPointsWithColor(Game.getImage(), LOG[LOGCHOSEN], 0.02D);
-//        for (Point POINT : LOGLOCS) {
-//            for (int CURRENT = 0; CURRENT < 28; CURRENT++) {
-//                if (PointInRect(POINT, Inventory.getSlotAt(CURRENT).getBounds())) {
-//                    return new Point(Inventory.getSlotAt(CURRENT).getCenter().x + random(-3, 3),
-//                            Inventory.getSlotAt(CURRENT).getCenter().y + random(-3, 3));
-//                }
-//            }
-//        }
-//        return null;
-//    }
-
     public Inventory.Slot getSlotWithCenterColor(Color color, int tolerance) {
         for (Inventory.Slot a : Inventory.Slot.values()) {
             if (areColorsClose(a.getCenterColor(), color, 5)) {
@@ -442,56 +424,6 @@ public class DwarfehFiremaker extends Script implements MouseListener {
         g.drawString("XP Gained: " + RoundToK(LOGSLIT * XPPERLOG[LOGCHOSEN]) + "K", 10, 130);
 
         g.drawString("Firemaking XP per hour: " + RoundToK(XpPerHour(LOGSLIT * XPPERLOG[LOGCHOSEN], STARTTIME)) + "K", 10, 150);
-////        Graphics2D g = (Graphics2D)g1;
-//        int FIRSTY = 390;
-//        int FIRSTX = 20;
-//        if (SHOWPAINT) {
-//            g.setColor(color1);
-//            g.fillRoundRect(10, 348, 483, 123, 16, 16);
-//            g.setColor(color2);
-//            g.setStroke(stroke1);
-//            g.drawRoundRect(10, 348, 483, 123, 16, 16);
-//            g.setFont(font1);
-//            g.setColor(color3);
-//            g.drawString("Dwarfeh's FireMaker", 146, 372);
-//            g.setColor(color2);
-//            g.drawString("Dwarfeh's FireMaker", 145, 371);
-//            g.drawLine(23, 361, 130, 361);
-//            g.drawLine(400, 361, 481, 361);
-//            g.setFont(font2);
-//            g.drawString("Time running: " + SortTime(System.currentTimeMillis() - STARTTIME), FIRSTX, FIRSTY);
-//            g.drawString("Current state: " + STATE, FIRSTX, FIRSTY + 18);
-//            g.drawString("Logs lit: " + LOGSLIT , FIRSTX, FIRSTY + 36);
-//            g.drawString("Firemaking XP gained: " + RoundToK(LOGSLIT * XPPERLOG[LOGCHOSEN]) + "K", FIRSTX, FIRSTY + 54);
-//            g.drawString("Firemaking XP per hour: " + RoundToK(XpPerHour(LOGSLIT * XPPERLOG[LOGCHOSEN], STARTTIME)) + "K", FIRSTX, FIRSTY + 72);
-//            g.drawImage(img1, 380, 280, null);
-//            g.setColor(color3);
-//            g.drawString("By Dwarfeh ", 328, 386);
-//            g.setColor(color2);
-//            g.drawString("By Dwarfeh ", 327, 385);
-//            g.drawImage(ON, ONOFFSWITCH.x, ONOFFSWITCH.y, null);
-//
-//            for (Point POINT : TINDERBOXLOCS) {
-//                for (int CURRENT = 0; CURRENT < 28; CURRENT++) {
-//                    Rectangle INVBOUNDS = Inventory.getSlotAt(CURRENT).getBounds();
-//                    if (PointInRect(POINT, INVBOUNDS)) {
-//                        g.setColor(TINDERBOX);
-//                        g.drawRect(INVBOUNDS.x, INVBOUNDS.y, INVBOUNDS.width, INVBOUNDS.height);
-//                    }
-//                }
-//            }
-//            for (Point POINT : LOGLOCS) {
-//                for (int CURRENT = 0; CURRENT < 28; CURRENT++) {
-//                    Rectangle INVBOUNDS = Inventory.getSlotAt(CURRENT).getBounds();
-//                    if (PointInRect(POINT, INVBOUNDS)) {
-//                        g.setColor(LOG[LOGCHOSEN]);
-//                        g.drawRect(INVBOUNDS.x, INVBOUNDS.y, INVBOUNDS.width, INVBOUNDS.height);
-//                    }
-//                }
-//            }
-//        } else {
-//            g.drawImage(OFF, ONOFFSWITCH.x, ONOFFSWITCH.y, null);
-//        }
         return null;
     }
 
@@ -500,10 +432,7 @@ public class DwarfehFiremaker extends Script implements MouseListener {
     }
 
     private double XpPerHour(double XP, long START) {
-        if (XP == 0) {
-            return 0;
-        }
-        return (int)(XP / ((System.currentTimeMillis() - START) / 1000L) * 3600.0D);
+        return XP == 0 ? 0: (int)(XP / ((System.currentTimeMillis() - START) / 1000L) * 3600.0D);
     }
 
     public static String SortTime(long millis){
@@ -610,6 +539,7 @@ public class DwarfehFiremaker extends Script implements MouseListener {
             }
         }
     }
+
     String findNumberString(Rectangle rec) {
         nums.clear();
         for (NUM allNumber : allNumbers) {
@@ -755,50 +685,76 @@ public class DwarfehFiremaker extends Script implements MouseListener {
         }
 
         public void btnStartActionPerformed(ActionEvent e) {
-            if (cmbMOUSESPEED.getSelectedIndex() == 0) {
-                MOUSESPEED = 7;
-            } else if (cmbMOUSESPEED.getSelectedIndex() == 1) {
-                MOUSESPEED = 5;
-            } else if (cmbMOUSESPEED.getSelectedIndex() == 2) {
-                MOUSESPEED = 4;
-            } else if (cmbMOUSESPEED.getSelectedIndex() == 3) {
-                MOUSESPEED = 2;
+            switch(cmbMOUSESPEED.getSelectedIndex()) {
+                case 0:
+                    MOUSESPEED =7;
+                    break;
+
+                case 1:
+                    MOUSESPEED = 5;
+                    break;
+
+                case 2:
+                    MOUSESPEED = 4;
+                    break;
+
+                case 3:
+                    MOUSESPEED = 2;
+                    break;
             }
 
-            if (cmbLAGADJUST.getSelectedIndex() == 0) {
-                LAGADJUST = 0;
-            } else if (cmbLAGADJUST.getSelectedIndex() == 1) {
-                LAGADJUST = 75;
-            } else if (cmbLAGADJUST.getSelectedIndex() == 2) {
-                LAGADJUST = 150;
-            } else if (cmbLAGADJUST.getSelectedIndex() == 3) {
-                LAGADJUST = 275;
-            } else if (cmbLAGADJUST.getSelectedIndex() == 4) {
-                LAGADJUST = 450;
+            switch(cmbLAGADJUST.getSelectedIndex()) {
+                case 0:
+                    LAGADJUST = 0;
+                    break;
+
+                case 1:
+                    LAGADJUST = 75;
+                    break;
+
+                case 2:
+                    LAGADJUST = 150;
+                    break;
+
+                case 3:
+                    LAGADJUST = 275;
+                    break;
+
+                case 4:
+                    LAGADJUST = 450;
+                    break;
             }
 
-            if (cmbANTIBAN.getSelectedIndex() == 0) {
-                ANTIBANAMOUNT = 1000;
-            } else if (cmbANTIBAN.getSelectedIndex() == 1) {
-                ANTIBANAMOUNT = 750;
-            } else if (cmbANTIBAN.getSelectedIndex() == 2) {
-                ANTIBANAMOUNT = 500;
-            } else if (cmbANTIBAN.getSelectedIndex() == 3) {
-                ANTIBANAMOUNT = 250;
-            } else if (cmbANTIBAN.getSelectedIndex() == 4) {
-                ANTIBANAMOUNT = 150;
+            switch(cmbANTIBAN.getSelectedIndex()) {
+                case 0:
+                    ANTIBANAMOUNT = 1000;
+                    break;
+
+                case 1:
+                    ANTIBANAMOUNT = 750;
+                    break;
+
+                case 2:
+                    ANTIBANAMOUNT = 500;
+                    break;
+
+                case 3:
+                    ANTIBANAMOUNT = 250;
+                    break;
+
+                case 4:
+                    ANTIBANAMOUNT = 150;
+                    break;
             }
 
-            if (cmbLIGHTMETHOD.getSelectedIndex() == 0) {
-                TINDERBOXLIGHT = true;
-            } else if (cmbLIGHTMETHOD.getSelectedIndex() == 1) {
-                TINDERBOXLIGHT = false;
-            }
+            TINDERBOXLIGHT = cmbLIGHTMETHOD.getSelectedIndex() == 0;
+
             LOGCHOSEN = cmbLOGS.getSelectedIndex();
             GUIOPENED = false;
             ui.dispose();
         }
     }
+
     public int random(int min, int max) {
         Random rand = new Random();
         return rand.nextInt((max+1) - min) + min;
