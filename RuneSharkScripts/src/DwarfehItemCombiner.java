@@ -1,5 +1,3 @@
-package Complete;
-
 import api.methods.*;
 import bot.script.Script;
 import bot.script.ScriptManager;
@@ -20,18 +18,35 @@ public class DwarfehItemCombiner extends Script {
     boolean opened = false;
     int numberToUse = 2;
 
+    Rectangle xpGained = new Rectangle(415, 5, 90, 35);
+    long startTime;
+    int startingXP;
+    int gained;
+
     @Override
     public boolean onStart() {
         log("Dwarfeh's Item Combiner starting");
+        toggleXPDisplay();
+        String text = RSText.findString(xpGained, null, null).replaceAll(" ", "");
+        if (text.contains("+")) {
+            text = text.substring(4);
+        }
+        startingXP = text.length() >= 1 ? Integer.parseInt(text) : 0;
+        startTime = System.currentTimeMillis();
         return true;
     }
 
     @Override
     public int loop() {
         try {
+            String text = RSText.findString(xpGained, null, null).replaceAll(" ", "");
+            if (text.contains("+")) {
+                text = text.substring(4);
+            }
+            gained = Integer.parseInt(text)-startingXP;
             if (!Tabs.getCurrentTab().equals("Inventory")) {
                 log("Inventory tab not open. Possibly stuck in random DERP!!!!");
-                ScriptManager.getCurrent().stopScript();    
+                ScriptManager.getCurrent().stopScript();
             }
             if (!guiDone) {
                 log("GUI completed!");
@@ -69,7 +84,7 @@ public class DwarfehItemCombiner extends Script {
                 bank();
 
             }
-        } catch (Throwable e) { }
+        } catch (Throwable ignored) { }
         return 0;
     }
 
@@ -201,7 +216,67 @@ public class DwarfehItemCombiner extends Script {
                 }
             }
         }
+
+        g.setStroke(new BasicStroke(6));
+        g.setColor(Color.white);
+        g.draw3DRect(1, 38, 140, 85, true);
+        g.setStroke(new BasicStroke(3));
+        g.setColor(new Color(0, 0, 0, 70));
+        g.fill3DRect(1, 38, 140, 85, true);
+        g.setColor(Color.white);
+
+        g.setFont(new Font("Arial", 0, 9));
+
+        g.drawRect(Mouse.getLocation().x, Mouse.getLocation().y, 10, 10);
+
+        g.drawString("Dwarfeh's Fisher", 10, 50);
+
+        int timeSpan = (int)(System.currentTimeMillis() - startTime) / 1000;
+
+        g.drawString("Running for " + getTime(timeSpan), 10, 70);
+
+
+        if (timeSpan > 0) {
+            g.drawString("Experience: " + gained + " [" + (int)((double)gained / timeSpan * 3600) + "/h]", 10, 90);
+//        }
+        }
         return null;
+    }
+
+    private String getTime(int seconds) {
+        StringBuilder sb = new StringBuilder();
+
+        if (seconds > 3600) {
+            sb.append(seconds / 3600);
+            seconds %= 3600;
+            sb.append(':');
+        }
+
+        int mins = seconds / 60;
+
+        if (mins == 0) {
+            sb.append("00");
+        } else {
+            if (mins < 10) {
+                sb.append('0');
+            }
+            sb.append(mins);
+        }
+
+        sb.append(':');
+
+        int secs = seconds % 60;
+
+        if (secs == 0) {
+            sb.append("00");
+        } else {
+            if (secs < 10) {
+                sb.append('0');
+            }
+            sb.append(secs);
+        }
+
+        return sb.toString();
     }
 
     public int getAmount(Color colors) {
@@ -256,5 +331,19 @@ public class DwarfehItemCombiner extends Script {
         ScriptManager.getCurrent().sleep(random(a, a+200));
     }
 
+    public void toggleXPDisplay() {
+        try {
+            String text = RSText.findString(xpGained, null, null).replaceAll(" ", "");
+            if (text.contains("+")) {
+                text = text.substring(4);
+            }
+            gained = Integer.parseInt(text);
+        }  catch(Throwable e) {
+            Mouse.move(random(532, 534), random(60, 62));
+            sleep(random(600, 800));
+            Mouse.click(random(532, 534), random(60, 62));
+            sleep(random(600, 800));
+        }
+    }
 }
 

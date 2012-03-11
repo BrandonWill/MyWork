@@ -1,8 +1,7 @@
 
 
-import api.methods.ColorUtil;
-import api.methods.Inventory;
-import api.methods.RSText;
+import api.methods.*;
+import bot.script.ScriptManager;
 
 import java.awt.*;
 import java.io.BufferedReader;
@@ -31,6 +30,8 @@ class NOTREALCLASS_Game {
             28, 26);
     public static final Rectangle HP_TEXT_BOUNDS = new Rectangle(719, 19, 27,
             25);
+
+    public static final Rectangle TOGGLE_XP = new Rectangle(415, 5, 90, 35);
 
     /**
      * Gets the current hp amount
@@ -69,6 +70,25 @@ class NOTREALCLASS_Game {
             return Integer.parseInt(s);
         }
         return -1;
+    }
+
+    /**
+     * Toggles the XP on if it's off. Does nothing
+     * if it's already on.
+     */
+    public void toggleXPDisplay() {
+        try {
+            String text = RSText.findString(TOGGLE_XP, null, null).replaceAll(" ", "");
+            if (text.contains("+")) {
+                text = text.substring(4);
+            }
+            Integer.parseInt(text);
+        }  catch(Throwable e) {
+            Mouse.move(MethodProvider.random(532, 534), MethodProvider.random(60, 62));
+            ScriptManager.getCurrent().sleep(MethodProvider.random(600, 800));
+            Mouse.click(MethodProvider.random(532, 534), MethodProvider.random(60, 62));
+            ScriptManager.getCurrent().sleep(MethodProvider.random(600, 800));
+        }
     }
 }
 

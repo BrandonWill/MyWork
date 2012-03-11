@@ -1,5 +1,3 @@
-package Complete;
-
 import api.methods.Mouse;
 import bot.Bot;
 import bot.script.Script;

@@ -1,5 +1,3 @@
-package Complete;
-
 import api.methods.*;
 import bot.script.Script;
 import bot.script.ScriptManifest;
@@ -440,10 +438,18 @@ public class DwarfehFisher extends Script {
     });
 
     public void toggleXPDisplay() {
-        Mouse.move(random(532, 534), random(60, 62));
-        sleep(random(600, 800));
-        Mouse.click(random(532, 534), random(60, 62));
-        sleep(random(600, 800));
+        try {
+            String text = RSText.findString(xpGained, null, null).replaceAll(" ", "");
+            if (text.contains("+")) {
+                text = text.substring(4);
+            }
+            gained = Integer.parseInt(text);
+        }  catch(Throwable e) {
+            Mouse.move(random(532, 534), random(60, 62));
+            sleep(random(600, 800));
+            Mouse.click(random(532, 534), random(60, 62));
+            sleep(random(600, 800));
+        }
     }
 
     @Override
@@ -457,7 +463,7 @@ public class DwarfehFisher extends Script {
         g.fill3DRect(1, 38, 140, 130, true);
         g.setColor(Color.white);
 
-//        g.setFont(new Font("Arial", 0, 9));
+        g.setFont(new Font("Arial", 0, 9));
 
         g.drawRect(Mouse.getLocation().x, Mouse.getLocation().y, 10, 10);
 
