@@ -1,30 +1,18 @@
 package Complete;
 
+import api.methods.*;
+import bot.script.Script;
+import bot.script.ScriptManifest;
+
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-
-import javax.imageio.ImageIO;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
-
-import api.methods.*;
-import bot.script.Script;
-import bot.script.ScriptManager;
-import bot.script.ScriptManifest;
-import util.Configuration;
+import java.util.LinkedList;
+import java.util.Random;
 
 @ScriptManifest(authors = { "Dwarfeh" }, name = "Dwarfeh's Fisher", version = 0.1, description = "A fisher script for net, bait and fly powerfishing.",  category = "Fishing")
 
@@ -35,15 +23,17 @@ public class DwarfehFisher extends Script {
     private State state = State.FISHING;
     private Mode mode = Mode.FLY_FISHING;
 
-    private int shrimpsDropped, anchoviesDropped, sardineDropped, herringDropped, pikeDropped, troutDropped, salmonDropped, lobsterDropped, tunaDropped, swordfishDropped;
-    private int count = 1, countTo = 0, invIndex;
+    private int count = 1;
+    private int countTo = 0;
 
     private int fishingIntervalBase = 15, fishingIntervalRandom = 10;
     private int compareImages = 4, compareInterval = 600, compareThreshold = 300;
     private int fishingColor = 8556460, fishingThreshold = 10*10;
     private int mouseSpeed = 2;
+    Rectangle loggedOut = new Rectangle(145, 70, 116, 20);
 
     private volatile boolean isSelecting = true;
+
 
     Rectangle xpGained = new Rectangle(415, 5, 90, 35);
     int startingXP;
@@ -87,7 +77,7 @@ public class DwarfehFisher extends Script {
 
                 frame.setSize(450, 350);
 
-                final JComboBox modeCombo = new JComboBox(new String[] { "Net fishing", "Bait Fishing", "Fly Fishing", "Cage fishing", "Harpoon fishing" });
+                final JComboBox<String> modeCombo = new JComboBox<String>(new String[] { "Net fishing", "Bait Fishing", "Fly Fishing", "Cage fishing", "Harpoon fishing" });
                 behaviorPanel.add(modeCombo);
 
                 final JLabel fI = new JLabel("Fishing interval (s)");
@@ -189,22 +179,13 @@ public class DwarfehFisher extends Script {
                         try {
                             fishingIntervalBase = Integer.parseInt(fishingInterval.getText());
                             fishingIntervalRandom = fishingIntervalBase;
-                        } catch (Exception e) {
-                        }
-                        try {
                             compareImages = Integer.parseInt(compareImages1.getText());
                             compareInterval = Integer.parseInt(compareInterval1.getText());
                             compareThreshold = Integer.parseInt(compareThreshold1.getText());
-                        } catch (Exception e) {
-                        }
-                        try {
                             fishingThreshold = Integer.parseInt(compareThreshold2.getText());
                             fishingColor = Integer.parseInt(fishingSpotColor.getText());
-                        } catch (Exception e) {
-                        }
-                        try {
                             mouseSpeed = Integer.parseInt(mouseSpeed1.getText());
-                        } catch (Exception e) {
+                        } catch (Exception ignored) {
                         }
 
                         frame.dispose();
@@ -318,10 +299,8 @@ public class DwarfehFisher extends Script {
 
                 case FISHING:
 
-                    if (ColorUtil.getDistance(Inventory.getSlotAt(27).getCenterColor(), new Color(61, 53, 43)) > 0.05
-                            || ColorUtil.getDistance(Game.getColorAt(698, 445), new Color(67, 59, 49)) > 0.05) {
+                    if (ColorUtil.getDistance(Inventory.getSlotAt(27).getCenterColor(), new Color(61, 53, 43)) > 0.05 || ColorUtil.getDistance(Game.getColorAt(698, 445), new Color(67, 59, 49)) > 0.05) {
                         state = State.DROPPING;
-                        invIndex = 0;
                         break;
                     }
 
@@ -333,18 +312,13 @@ public class DwarfehFisher extends Script {
 
                 case DROPPING:
 
-                    if (invIndex >= 28) {
-                        state = State.LOOKING_FOR_SPOT;
-                        break;
-                    }
-
                     dropAllExcept(0);
 
                     state = State.LOOKING_FOR_SPOT;
 
                     break;
             }
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
 
         return 1000;
@@ -460,7 +434,7 @@ public class DwarfehFisher extends Script {
                 }
                 try {
                     sleep(random(500, 800));
-                } catch(Throwable e) { }
+                } catch(Throwable ignored) { }
             }
         }
     });
@@ -497,23 +471,11 @@ public class DwarfehFisher extends Script {
 
         g.drawString("Mode: " + mode, 10, 110);
 
-        int xp = shrimpsDropped * 10 + anchoviesDropped * 40
-                + sardineDropped * 20 + herringDropped * 30 + pikeDropped * 60
-                + troutDropped * 50 + salmonDropped * 70
-                + lobsterDropped * 90
-                + tunaDropped * 80 + swordfishDropped * 100;
-
         if (timeSpan > 0) {
             g.drawString("Experience: " + gained + " [" + (int)((double)gained / timeSpan * 3600) + "/h]", 10, 150);
 //        }
         }
         return null;
-    }
-
-    Rectangle loggedOut = new Rectangle(145, 70, 116, 20);
-
-    public boolean areColorsClose(Color color1, Color color2, int toleranceAmount) {
-        return (color1.getRed() - color2.getRed() < toleranceAmount && color1.getRed() - color2.getRed() > -toleranceAmount) && (color1.getBlue() - color2.getBlue() < toleranceAmount && color1.getBlue() - color2.getBlue() > -toleranceAmount) && (color1.getGreen() - color2.getGreen() < toleranceAmount && color1.getGreen() - color2.getGreen() > -toleranceAmount);
     }
 
     public int random(int min, int max) {
