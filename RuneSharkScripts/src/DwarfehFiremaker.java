@@ -86,7 +86,7 @@ public class DwarfehFiremaker extends Script {
         }
 
         Mouse.setSpeed(random(mouseSpeed - 1, mouseSpeed + 1));
-        if (InventoryContainsTinderbox()) {
+        if (InventoryContainsTinderbox() || !tinderboxLight) {
             if (InventoryContainsLog()) {
                 if (!StandsOnFire()) {
                     STATE = "Burning logs";
