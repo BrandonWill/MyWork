@@ -1,3 +1,5 @@
+package Complete;
+
 import api.methods.Game;
 import api.methods.RSText;
 import bot.Bot;

@@ -1,3 +1,5 @@
+package Complete;
+
 import api.methods.*;
 import bot.script.Script;
 import bot.script.ScriptManager;
