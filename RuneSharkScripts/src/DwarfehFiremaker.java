@@ -1,12 +1,9 @@
 import api.methods.*;
-import bot.Bot;
 import bot.script.Script;
 import bot.script.ScriptManifest;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
@@ -15,9 +12,6 @@ import javax.swing.*;
 
 @ScriptManifest(authors = { "Dwarfeh" }, name = "Dwarfeh's Firemaker", version = 0.1, description = "I MAKEITY THE FIRE",  category = "Firemaking")
 public class DwarfehFiremaker extends Script {
-
-    private java.util.List<Point> tinderLocs = new LinkedList<Point>();
-
     private String STATE;
 
     private long startTime = 0;
@@ -266,10 +260,10 @@ public class DwarfehFiremaker extends Script {
     }
 
     private void BurnOneLogWithTinderbox() {
-        Point TINDERBOXPOS = TinderboxPos();
+        Point tinderboxPos = getSlotWithCenterColor(tinderbox, 5).getCenter();
         Point nextLog = getSlotWithCenterColor(log[logChosen], 5).getCenter();
-        if (TINDERBOXPOS != null && nextLog != null) {
-            Mouse.click(TINDERBOXPOS);
+        if (tinderboxPos != null && nextLog != null) {
+            Mouse.click(tinderboxPos);
             sleep(500 + lagAdjust, 750 + lagAdjust);
             Mouse.click(nextLog);
             logsLit++;
@@ -303,32 +297,10 @@ public class DwarfehFiremaker extends Script {
             }
         }
         return null;
-    }    
-    
-    private Point LogPos() {
-        for (Inventory.Slot a : Inventory.Slot.values()) {
-            if (areColorsClose(a.getCenterColor(), log[logChosen], 3)) {
-                return new Point(a.getCenter().x + random(-3, 3), a.getCenter().y + random(-3, 3));
-            }
-        }
-        return null;
     }
 
     public boolean areColorsClose(Color color1, Color color2, int toleranceAmount) {
         return (color1.getRed() - color2.getRed() < toleranceAmount && color1.getRed() - color2.getRed() > -toleranceAmount) && (color1.getBlue() - color2.getBlue() < toleranceAmount && color1.getBlue() - color2.getBlue() > -toleranceAmount) && (color1.getGreen() - color2.getGreen() < toleranceAmount && color1.getGreen() - color2.getGreen() > -toleranceAmount);
-    }
-
-    private Point TinderboxPos() {
-        tinderLocs = ImageUtil.getPointsWithColor(Game.getImage(), tinderbox, 0.015D);
-        for (Point POINT : tinderLocs) {
-            for (int current = 0; current < 28; current++) {
-                if (PointInRect(POINT, Inventory.getSlotAt(current).getBounds())) {
-                    return new Point(Inventory.getSlotAt(current).getCenter().x + random(-5, 5),
-                            Inventory.getSlotAt(current).getCenter().y + random(-5, 5));
-                }
-            }
-        }
-        return null;
     }
 
     private boolean InventoryContainsLog() {
@@ -381,16 +353,6 @@ public class DwarfehFiremaker extends Script {
         }
     }
 
-    private final Color color1 = new Color(238, 227, 197);
-    private final Color color2 = new Color(0, 0, 0);
-    private final Color color3 = new Color(102, 102, 102);
-    private final BasicStroke stroke1 = new BasicStroke(1);
-    private final Font font1 = new Font("Calibri", 1, 24);
-    private final Font font2 = new Font("Calibri", 1, 16);
-    private final Image img1 = getImage("http://i.imgur.com/Pclgw.png");
-    private final Image ON = getImage("http://i.imgur.com/SO5VA.png");
-    private final Image OFF = getImage("http://i.imgur.com/uDXR6.png");
-
 
     @Override
     public Graphics doPaint(Graphics g1) {
@@ -426,7 +388,7 @@ public class DwarfehFiremaker extends Script {
     }
 
     private double XpPerHour(double XP, long START) {
-        return XP == 0 ? 0: (int)(XP / ((System.currentTimeMillis() - START) / 1000L) * 3600.0D);
+        return XP == 0 ? 0 : (int)(XP / ((System.currentTimeMillis() - START) / 1000L) * 3600.0D);
     }
 
     public static String SortTime(long millis){
@@ -460,17 +422,17 @@ public class DwarfehFiremaker extends Script {
         }
     }
 
-    public class NUMBERS {
+    public class Numbers {
         private int x;
         private String num;
 
-        public NUMBERS(String num, int x) {
+        public Numbers(String num, int x) {
             this.x = x;
             this.num = num;
         }
     }
 
-    ArrayList<NUMBERS> nums = new ArrayList<NUMBERS>();
+    ArrayList<Numbers> nums = new ArrayList<Numbers>();
     private Point[] Y = {new Point(0, 0), new Point(4, 0), new Point(0, 1), new Point(4, 1), new Point(0, 2), new Point(4, 2), new Point(1, 3), new Point(3, 3), new Point(2, 4),
             new Point(2, 4), new Point(2, 5), new Point(2, 6), new Point(2, 7), new Point(2, 8), new Point(2, 9)};
 
@@ -492,7 +454,7 @@ public class DwarfehFiremaker extends Script {
 
     private final Color BLACK = new Color(0, 0, 0);
 
-    void findNumber(NUM number, ArrayList<NUMBERS> numbF, Rectangle rec) {
+    void findNumber(NUM number, ArrayList<Numbers> numbF, Rectangle rec) {
 
         // TRAVERSE GAME SCREEN
         for(int y = rec.y; y < rec.y + rec.height; y++) {
@@ -509,7 +471,7 @@ public class DwarfehFiremaker extends Script {
                         }
                     }
                     if(found) {
-                        numbF.add(new NUMBERS(number.num, loc.x));
+                        numbF.add(new Numbers(number.num, loc.x));
                     }
                 }
             }
@@ -527,8 +489,8 @@ public class DwarfehFiremaker extends Script {
     private String sortNumbers() {
         String num = "";
         while(!nums.isEmpty()) {
-            NUMBERS curNum = new NUMBERS("X", 800);
-            for (NUMBERS num1 : nums) {
+            Numbers curNum = new Numbers("X", 800);
+            for (Numbers num1 : nums) {
                 if (num1.x < curNum.x) {
                     curNum = num1;
                 }
@@ -541,7 +503,9 @@ public class DwarfehFiremaker extends Script {
 
     boolean colorsMatch(final Color origC, final Color... comparC) {
         for (Color color : comparC) {
-            if(origC.equals(color)) return true;
+            if(origC.equals(color)) {
+                return true;
+            }
         }
         return false;
     }
