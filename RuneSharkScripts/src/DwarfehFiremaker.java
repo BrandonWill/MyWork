@@ -99,7 +99,6 @@ public class DwarfehFiremaker extends Script implements MouseListener {
 //                Camera.moveUp(random(2000, 2200));
                 didDo = true;
             }
-            log("Speed is 0... returning");
             return 300;
         }
 
@@ -756,7 +755,6 @@ public class DwarfehFiremaker extends Script implements MouseListener {
         }
 
         public void btnStartActionPerformed(ActionEvent e) {
-            log("Event happened");
             if (cmbMOUSESPEED.getSelectedIndex() == 0) {
                 MOUSESPEED = 7;
             } else if (cmbMOUSESPEED.getSelectedIndex() == 1) {
