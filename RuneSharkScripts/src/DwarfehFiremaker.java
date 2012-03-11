@@ -3,11 +3,7 @@ import bot.script.Script;
 import bot.script.ScriptManifest;
 
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.io.IOException;
-import java.net.URL;
 import java.util.*;
-import javax.imageio.ImageIO;
 import javax.swing.*;
 
 @ScriptManifest(authors = { "Dwarfeh" }, name = "Dwarfeh's Firemaker", version = 0.1, description = "I MAKEITY THE FIRE",  category = "Firemaking")
@@ -40,14 +36,12 @@ public class DwarfehFiremaker extends Script {
     private static final Rectangle LOGSINBANKSPOT = new Rectangle(40, 95, 25, 25);
     private static final Rectangle SIXTHROW = new Rectangle(560, 395, 165, 25);
     private static final Rectangle SEVENTHROW = new Rectangle(560, 430, 165, 25);
-    private static final Rectangle ONOFFSWITCH = new Rectangle(10, 314, 66, 22);
     private static final Rectangle TILENORTH = new Rectangle(245, 135, 30, 25);
     private static final Rectangle TILESOUTH = new Rectangle(240, 200, 35, 35);
 
 
     private boolean ignoreYouCan;
     private boolean tinderboxLight;
-    private boolean guiOpened = true;
 
     private UserInterface ui;
 
@@ -70,73 +64,67 @@ public class DwarfehFiremaker extends Script {
         startTime = System.currentTimeMillis();
         return true;
     }
-    
+
 
     @Override
     public void onFinish() {
         log("Thanks for using Dwarfeh's FireMaker");
     }
 
-    boolean didDo = false;
     @Override
     public int loop() {
         try {
-        if (mouseSpeed == 0){
-            return 300;
-        }
-
-        Mouse.setSpeed(random(mouseSpeed - 1, mouseSpeed + 1));
-        if (InventoryContainsTinderbox() || !tinderboxLight) {
-            if (InventoryContainsLog()) {
-                if (!StandsOnFire()) {
-                    STATE = "Burning logs";
-                    if (tinderboxLight) {
-                        BurnOneLogWithTinderbox();
+            if (mouseSpeed == 0){
+                return 300;
+            }
+            Mouse.setSpeed(random(mouseSpeed - 1, mouseSpeed + 1));
+            if (inventoryContainsTinderbox() || !tinderboxLight) {
+                if (inventoryContainsLog()) {
+                    if (!standingOnFire()) {
+                        STATE = "Burning logs";
+                        burnLog();
                     } else {
-                        BurnOneLogWithRightClick();
+                        STATE = "Can't light fire, moving";
+                        walkToCloseTile();
                     }
                 } else {
-                    STATE = "Can't light fire, moving";
-                    WalkToOtherTile();
+                    if (nearBank() || BankIsOpen()) {
+                        if (BankIsOpen()) {
+                            STATE = "Withdrawing logs";
+                            withdrawLogs();
+                        } else {
+                            STATE = "Opening bank";
+                            openBank();
+                        }
+                    } else {
+                        STATE = "Walking to banker";
+                        walkToBank();
+                    }
                 }
             } else {
-                if (NearBanker() || BankIsOpen()) {
-                    if (BankIsOpen()) {
-                        STATE = "Withdrawing logs";
-                        WithdrawLogs();
-                    } else {
-                        STATE = "Opening bank";
-                        OpenBank();
-                    }
-                } else {
-                    STATE = "Walking to banker";
-                    WalkToBank();
-                }
+                log("Can not spot a tinderbox in the inventory");
+                STATE = "We don't have a tinderbox";
             }
-        } else {
-            log("Can not spot a tinderbox in the inventory");
-            STATE = "We don't have a tinderbox";
-        }
-        AntiBan();
+            antiBan();
         }    catch (Exception ignored) {}
         return 1;
     }
 
-    private void WalkToOtherTile() {
+    private void walkToCloseTile() {
         switch(random(1, 3)) {
             case 2:
-                Mouse.click(RandomPointInRect(TILENORTH));
+                Mouse.click(randomPointInRect(TILENORTH));
                 sleep(1250 + lagAdjust, 1500 + lagAdjust);
                 break;
-            
+
             default:
-                Mouse.click(RandomPointInRect(TILESOUTH));
+                Mouse.click(randomPointInRect(TILESOUTH));
                 sleep(1250 + lagAdjust, (1500 + lagAdjust));
                 break;
         }
     }
 
-    private void AntiBan() {
+    private void antiBan() {
         switch(random(0, antibanAmount)){
             case 1:
                 STATE = "Performing Anti-Ban";
@@ -149,17 +137,17 @@ public class DwarfehFiremaker extends Script {
 
     private void WalkToRight() {
         sleep(random(500 + lagAdjust, 750 + lagAdjust));
-        Mouse.click(RandomPointInRect(WALKRIGHT));
+        Mouse.click(randomPointInRect(WALKRIGHT));
         sleep(5000 + lagAdjust, 6500 + lagAdjust);
     }
 
-    private void WalkToBank() {
+    private void walkToBank() {
         Point bankIconPos = BankIconOnMap();
         if (bankIconPos != null) {
             sleep(random(500 + lagAdjust, 750 + lagAdjust));
             Mouse.click(bankIconPos);
             for (int i = 0; i < 10; i++) {
-                boolean spottedBanker = NearBanker();
+                boolean spottedBanker = nearBank();
                 if (!spottedBanker) {
                     sleep(random(500 + lagAdjust, 600 + lagAdjust));
                 }
@@ -170,14 +158,14 @@ public class DwarfehFiremaker extends Script {
     }
 
     private Point BankIconOnMap() {
-        return GetRandomPoint(bankIcon, 0.005D, 0, 75, middleMiniMap);
+        return getRandomPoint(bankIcon, 0.005D, 0, 75, middleMiniMap);
     }
 
     private boolean BankIsOpen() {
         return ColorIsInBounds(log[logChosen], 0.03D, 20, new Point(52, 107));
     }
 
-    private void OpenBank() {
+    private void openBank() {
         Point bankerPos = PointByColorInBounds(banker, 0.07D, 250, midScreen);
         if (bankerPos != null) {
             RightClick(bankerPos);
@@ -187,14 +175,14 @@ public class DwarfehFiremaker extends Script {
             sleep(random(2000 + lagAdjust, 2350 + lagAdjust));
             if (failToOpenBank >= 3) {
                 failToOpenBank = 0;
-                WalkToBank();
+                walkToBank();
             }
         }
     }
 
-    private void WithdrawLogs() {
+    private void withdrawLogs() {
         failToOpenBank = 0;
-        Point rClick = RandomPointInRect(LOGSINBANKSPOT);
+        Point rClick = randomPointInRect(LOGSINBANKSPOT);
         RightClick(rClick);
         sleep(600 + lagAdjust, 900 + lagAdjust);
         Mouse.click(rClick.x + random(-10, 10), rClick.y + random(105, 115));
@@ -202,7 +190,7 @@ public class DwarfehFiremaker extends Script {
         WalkToRight();
     }
 
-    private boolean StandsOnFire() {
+    private boolean standingOnFire() {
         Rectangle yourBounds = new Rectangle(8, 442, 50, 12);
         String OCR = findNumberString(yourBounds);
         if ("Yocuca".equals(OCR) && !ignoreYouCan) {
@@ -213,86 +201,89 @@ public class DwarfehFiremaker extends Script {
         return false;
     }
 
-    private boolean NearBanker() {
-        return ColorIsInBounds(banker, 0.07D, 250);
+    private boolean nearBank() {
+        return colorIsInBounds(banker, 0.07D, 250);
     }
 
-    private boolean ColorIsInBounds(Color COLOR, double TOLERANCE, double MAXDIST) {
-        return ColorIsInBounds(COLOR, TOLERANCE, MAXDIST, midScreen);
+    private boolean colorIsInBounds(Color color, double tolerance, double maxDist) {
+        return ColorIsInBounds(color, tolerance, maxDist, midScreen);
     }
-    private boolean ColorIsInBounds(Color COLOR, double TOLERANCE, double MAXDIST, Point MID) {
-        Point POINT = PointByColorInBounds(COLOR, TOLERANCE, MAXDIST, MID);
-        return POINT != null;
+    private boolean ColorIsInBounds(Color color, double tolerance, double maxDist, Point mid) {
+        Point point = PointByColorInBounds(color, tolerance, maxDist, mid);
+        return point != null;
     }
 
-    private Point PointByColorInBounds(Color COLOR, double TOLERANCE, double MAXDIST, Point MID) {
-        Point NEAREST = null;
-        double DIST = 0;
-        java.util.List<Point> colorLocs = ImageUtil.getPointsWithColor(Game.getImage(), COLOR, TOLERANCE);
-        for (Point POINT : colorLocs) {
-            double distTmp = getDistanceBetween(POINT, MID);
-            if (distTmp < MAXDIST) {
-                if (NEAREST == null) {
-                    DIST = distTmp;
-                    NEAREST = POINT;
-                } else if (distTmp < DIST) {
-                    NEAREST = POINT;
-                    DIST = distTmp;
+    private Point PointByColorInBounds(Color color, double tolerance, double maxDist, Point mid) {
+        Point closest = null;
+        double dist = 0;
+        java.util.List<Point> colorloc = ImageUtil.getPointsWithColor(Game.getImage(), color, tolerance);
+        for (Point point : colorloc) {
+            double distTmp = getDistanceBetween(point, mid);
+            if (distTmp < maxDist) {
+                if (closest == null) {
+                    dist = distTmp;
+                    closest = point;
+                } else if (distTmp < dist) {
+                    closest = point;
+                    dist = distTmp;
                 }
             }
         }
-        return NEAREST;
+        return closest;
     }
 
-    private Point GetRandomPoint(Color COLOR, double TOLERANCE, int MINDIST,int MAXDIST, Point MID) {
-        java.util.List<Point> Locs = ImageUtil.getPointsWithColor(Game.getImage(), COLOR, TOLERANCE);
-        Point RandomPoint = null;
-        while (RandomPoint == null && Locs != null) {
+    private Point getRandomPoint(Color color, double tolerance, int MINdist,int maxDist, Point mid) {
+        java.util.List<Point> loc = ImageUtil.getPointsWithColor(Game.getImage(), color, tolerance);
+        Point randomPoint = null;
+        while (randomPoint == null && loc != null) {
             try {
-                Point RandomPointGuess = Locs.get(random(0, Locs.size()));
-                double DIST = getDistanceBetween(RandomPointGuess, MID);
-                if (DIST > MINDIST && DIST < MAXDIST) {
-                    RandomPoint = RandomPointGuess;
+                Point randomPointGuess = loc.get(random(0, loc.size()));
+                double dist = getDistanceBetween(randomPointGuess, mid);
+                if (dist > MINdist && dist < maxDist) {
+                    randomPoint = randomPointGuess;
                 }
             } catch (Throwable ignored) { }
         }
-        return RandomPoint;
+        return randomPoint;
     }
 
-    private void BurnOneLogWithTinderbox() {
+    private void burnLog() {
         Point tinderboxPos = getSlotWithCenterColor(tinderbox, 5).getCenter();
         Point nextLog = getSlotWithCenterColor(log[logChosen], 5).getCenter();
-        if (tinderboxPos != null && nextLog != null) {
-            Mouse.click(tinderboxPos);
-            sleep(500 + lagAdjust, 750 + lagAdjust);
-            Mouse.click(nextLog);
-            logsLit++;
-            sleep(1150 + lagAdjust, 1400 + lagAdjust);
-        }
-    }
+        switch (Boolean.toString(tinderboxLight).equals("true") ? 1 : 0) {
+            case 0:
+                if (nextLog != null) {
+                    int yChange;
+                    if (pointInRect(nextLog, SIXTHROW)) {
+                        yChange = 30;
+                    } else if (pointInRect(nextLog, SEVENTHROW)) {
+                        yChange = -15;
+                    } else {
+                        yChange = 45;
+                    }
+                    RightClick(nextLog);
+                    sleep(500 + lagAdjust, 750 + lagAdjust);
+                    Mouse.click(nextLog.x + random(-10, 10), nextLog.y + random(yChange - 3, yChange + 3));
+                    logsLit++;
+                    sleep(1250 + lagAdjust, 1500 + lagAdjust);
+                }
+                break;
 
-    private void BurnOneLogWithRightClick() {
-        Point nextLog = getSlotWithCenterColor(log[logChosen], 5).getCenter();
-        if (nextLog != null) {
-            int yChange;
-            if (PointInRect(nextLog, SIXTHROW)) {
-                yChange = 30;
-            } else if (PointInRect(nextLog, SEVENTHROW)) {
-                yChange = -15;
-            } else {
-                yChange = 45;
-            }
-            RightClick(nextLog);
-            sleep(500 + lagAdjust, 750 + lagAdjust);
-            Mouse.click(nextLog.x + random(-10, 10), nextLog.y + random(yChange - 3, yChange + 3));
-            logsLit++;
-            sleep(1250 + lagAdjust, 1500 + lagAdjust);
+            case 1:
+                if (tinderboxPos != null && nextLog != null) {
+                    Mouse.click(tinderboxPos);
+                    sleep(500 + lagAdjust, 750 + lagAdjust);
+                    Mouse.click(nextLog);
+                    logsLit++;
+                    sleep(1150 + lagAdjust, 1400 + lagAdjust);
+                }
+                break;
         }
     }
 
     public Inventory.Slot getSlotWithCenterColor(Color color, int tolerance) {
         for (Inventory.Slot a : Inventory.Slot.values()) {
-            if (areColorsClose(a.getCenterColor(), color, 5)) {
+            if (areColorsClose(a.getCenterColor(), color, tolerance)) {
                 return a;
             }
         }
@@ -303,54 +294,40 @@ public class DwarfehFiremaker extends Script {
         return (color1.getRed() - color2.getRed() < toleranceAmount && color1.getRed() - color2.getRed() > -toleranceAmount) && (color1.getBlue() - color2.getBlue() < toleranceAmount && color1.getBlue() - color2.getBlue() > -toleranceAmount) && (color1.getGreen() - color2.getGreen() < toleranceAmount && color1.getGreen() - color2.getGreen() > -toleranceAmount);
     }
 
-    private boolean InventoryContainsLog() {
-        return ItemCountInInventory(log[logChosen], 0.01D) != 0;
+    private boolean inventoryContainsLog() {
+        return getAmount(log[logChosen]) != 0;
     }
 
-    private boolean InventoryContainsTinderbox() {
-        return ItemCountInInventory(tinderbox, 0.015D) != 0;
+    private boolean inventoryContainsTinderbox() {
+        return getAmount(tinderbox) != 0;
     }
 
-    private int ItemCountInInventory(Color COLOR, double TOLERANCE) {
-        boolean[] clickedInvSpot = { false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
-                , false, false, false, false, false, false, false, false, false, false, false, false, false };
-        int count = 0;
-        java.util.List<Point> plankLoc = ImageUtil.getPointsWithColor(Game.getImage(), COLOR, TOLERANCE);
-        for (Point POINT : plankLoc) {
-            for (int current = 0; current < 28; current++) {
-                if (PointInRect(POINT, Inventory.getSlotAt(current).getBounds()) && !clickedInvSpot[current]) {
-                    count ++;
-                    clickedInvSpot[current] = true;
-                }
+    public int getAmount(Color colors) {
+        int amount = 0;
+        for (int i = 0; i < 28; i++) {
+            if (areColorsClose(Inventory.getSlotAt(i).getCenterColor(), colors, 5)) {
+                amount += 1;
             }
         }
-        return count;
+        return amount;
     }
 
-    private boolean PointInRect(Point POINT, Rectangle RECT) {
-        return POINT.x >= RECT.x && POINT.x <= (RECT.x + RECT.width) && POINT.y >= RECT.y && POINT.y <= (RECT.y + RECT.height);
+    private boolean pointInRect(Point point, Rectangle RECT) {
+        return point.x >= RECT.x && point.x <= (RECT.x + RECT.width) && point.y >= RECT.y && point.y <= (RECT.y + RECT.height);
     }
 
-    private Point RandomPointInRect(Rectangle RECT) {
+    private Point randomPointInRect(Rectangle RECT) {
         return new Point(RECT.x + random(0, RECT.width), RECT.y + random(0, RECT.height));
     }
 
-    public static void RightClick(Point POINT) {
-        if (!Game.isPointValid(POINT.x, POINT.y)) {
+    public static void RightClick(Point point) {
+        if (!Game.isPointValid(point.x, point.y)) {
             return;
         }
-        if (!Mouse.getLocation().equals(new Point(POINT.x, POINT.y))) {
-            Mouse.move(POINT.x, POINT.y);
+        if (!Mouse.getLocation().equals(new Point(point.x, point.y))) {
+            Mouse.move(point.x, point.y);
         }
-        Mouse.click(POINT.x, POINT.y, false);
-    }
-
-    private Image getImage(String url) {
-        try {
-            return ImageIO.read(new URL(url));
-        } catch(IOException e) {
-            return null;
-        }
+        Mouse.click(point.x, point.y, false);
     }
 
 
@@ -377,18 +354,18 @@ public class DwarfehFiremaker extends Script {
 
         g.drawString("Logs Lit: " + logsLit, 10, 110);
 
-        g.drawString("XP Gained: " + RoundToK(logsLit * xpPerLog[logChosen]) + "K", 10, 130);
+        g.drawString("xp Gained: " + roundToK(logsLit * xpPerLog[logChosen]) + "K", 10, 130);
 
-        g.drawString("Firemaking XP per hour: " + RoundToK(XpPerHour(logsLit * xpPerLog[logChosen], startTime)) + "K", 10, 150);
+        g.drawString("Firemaking xp per hour: " + roundToK(xpPerHour(logsLit * xpPerLog[logChosen], startTime)) + "K", 10, 150);
         return null;
     }
 
-    private double RoundToK(Double ROUND) {
-        return (Math.round(ROUND * 1000) / 1000) / 1000;
+    private double roundToK(Double round) {
+        return (Math.round(round * 1000) / 1000) / 1000;
     }
 
-    private double XpPerHour(double XP, long START) {
-        return XP == 0 ? 0 : (int)(XP / ((System.currentTimeMillis() - START) / 1000L) * 3600.0D);
+    private double xpPerHour(double xp, long start) {
+        return xp == 0 ? 0 : (int)(xp / ((System.currentTimeMillis() - start) / 1000L) * 3600.0D);
     }
 
     public static String SortTime(long millis){
@@ -411,12 +388,12 @@ public class DwarfehFiremaker extends Script {
         return hours + "h " + minutes + "m " + seconds + "s";
     }
     //OCR
-    public class NUM {
+    public class num {
         private Point[] points;
         private  String num;
 
 
-        public NUM(Point[] points, String number) {
+        public num(Point[] points, String number) {
             this.points = points;
             this.num = number;
         }
@@ -450,27 +427,24 @@ public class DwarfehFiremaker extends Script {
 
     private Point[] n = {new Point(0, 0), new Point(2, 0), new Point(3, 0), new Point(0, 1), new Point(1, 1), new Point(4, 1), new Point(0, 2), new Point(4, 2), new Point(0, 3),
             new Point(4, 3), new Point(0, 4), new Point(4, 4), new Point(4, 4), new Point(0, 5), new Point(5, 5)};
-    private NUM[] allNumbers = {new NUM(Y, "Y"), new NUM(o, "o"), new NUM(u, "u"), new NUM(c, "c"), new NUM(a, "a"), new NUM(n, "n")};
+    private num[] allNumbers = {new num(Y, "Y"), new num(o, "o"), new num(u, "u"), new num(c, "c"), new num(a, "a"), new num(n, "n")};
 
     private final Color BLACK = new Color(0, 0, 0);
 
-    void findNumber(NUM number, ArrayList<Numbers> numbF, Rectangle rec) {
+    void findNumber(num number, ArrayList<Numbers> numbF, Rectangle rec) {
 
-        // TRAVERSE GAME SCREEN
         for(int y = rec.y; y < rec.y + rec.height; y++) {
             for(int x = rec.x; x < rec.x + rec.width; x++) {
-                // FIND POINT WITH COLOR THAT MATCHES TEXT COLOR
                 if(colorsMatch(Game.getColorAt(x, y), BLACK)) {
-                    // MOVE POINT TO STARTING LOCATION OF NUMBER TO CHECK
                     final Point loc = new Point(x - number.points[0].x, y - number.points[0].y);
                     boolean found = true;
                     for(int i = 0; i < number.points.length; i++) {
-                        if(!colorsMatch(Game.getColorAt(loc.x + number.points[i].x, loc.y + number.points[i].y), BLACK)) {
+                        if (!colorsMatch(Game.getColorAt(loc.x + number.points[i].x, loc.y + number.points[i].y), BLACK)) {
                             found = false;
                             break;
                         }
                     }
-                    if(found) {
+                    if (found) {
                         numbF.add(new Numbers(number.num, loc.x));
                     }
                 }
@@ -480,7 +454,7 @@ public class DwarfehFiremaker extends Script {
 
     String findNumberString(Rectangle rec) {
         nums.clear();
-        for (NUM allNumber : allNumbers) {
+        for (num allNumber : allNumbers) {
             findNumber(allNumber, nums, rec);
         }
         return sortNumbers();
@@ -534,7 +508,7 @@ public class DwarfehFiremaker extends Script {
             setLocationRelativeTo(null);
             setLayout(null);
             setSize(320, 212);
-            setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+            setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
             lblGENSET = new JLabel("General settings", JLabel.CENTER);
             lblGENSET.setForeground(Color.BLUE);
@@ -543,70 +517,70 @@ public class DwarfehFiremaker extends Script {
             add(lblGENSET);
 
             lblmouseSpeed = new JLabel("Mouse speed");
-            lblmouseSpeed.setForeground(Color.BLACK);
+            lblmouseSpeed.setForeground(Color.LIGHT_GRAY);
             lblmouseSpeed.setBounds(5, 40, 300, 14);
             lblmouseSpeed.setFont(new Font("Arial", Font.BOLD, 14));
             add(lblmouseSpeed);
 
             String[] mouseSpeedS = { "Slow", "Medium", "Fast", "Ultra fast" };
             cmbmouseSpeed = new JComboBox<String>(mouseSpeedS);
-            cmbmouseSpeed.setForeground(Color.BLACK);
+            cmbmouseSpeed.setForeground(Color.LIGHT_GRAY);
             cmbmouseSpeed.setSelectedIndex(2);
             cmbmouseSpeed.setBounds(125, 38, 180, 20);
             cmbmouseSpeed.setFont(new Font("Arial", Font.PLAIN, 14));
             add(cmbmouseSpeed);
 
             lbllagAdjust = new JLabel("Lag adjust");
-            lbllagAdjust.setForeground(Color.BLACK);
+            lbllagAdjust.setForeground(Color.LIGHT_GRAY);
             lbllagAdjust.setBounds(5, 62, 300, 14);
             lbllagAdjust.setFont(new Font("Arial", Font.BOLD, 14));
             add(lbllagAdjust);
 
             String[] lagAdjustS = { "Nothing", "Minimal", "Little", "Medium", "Much" };
             cmblagAdjust = new JComboBox<String>(lagAdjustS);
-            cmblagAdjust.setForeground(Color.BLACK);
+            cmblagAdjust.setForeground(Color.LIGHT_GRAY);
             cmblagAdjust.setSelectedIndex(1);
             cmblagAdjust.setBounds(125, 60, 180, 20);
             cmblagAdjust.setFont(new Font("Arial", Font.PLAIN, 14));
             add(cmblagAdjust);
 
             lblLOGS = new JLabel("Logs to light");
-            lblLOGS.setForeground(Color.BLACK);
+            lblLOGS.setForeground(Color.LIGHT_GRAY);
             lblLOGS.setBounds(5, 84, 300, 14);
             lblLOGS.setFont(new Font("Arial", Font.BOLD, 14));
             add(lblLOGS);
 
             String[] LOGS = { "Normal", "Oak", "Willow", "Maple", "Yew", "Magic" };
             cmbLOGS = new JComboBox<String>(LOGS);
-            cmbLOGS.setForeground(Color.BLACK);
+            cmbLOGS.setForeground(Color.LIGHT_GRAY);
             cmbLOGS.setSelectedIndex(3);
             cmbLOGS.setBounds(125, 82, 180, 20);
             cmbLOGS.setFont(new Font("Arial", Font.PLAIN, 14));
             add(cmbLOGS);
 
             lblANTIBAN = new JLabel("Anti-Ban usage");
-            lblANTIBAN.setForeground(Color.BLACK);
+            lblANTIBAN.setForeground(Color.LIGHT_GRAY);
             lblANTIBAN.setBounds(5, 106, 300, 14);
             lblANTIBAN.setFont(new Font("Arial", Font.BOLD, 14));
             add(lblANTIBAN);
 
             String[] antibanAmountS = { "Rarely", "Sometimes", "Medium", "Alot", "Almost always" };
             cmbANTIBAN = new JComboBox<String>(antibanAmountS);
-            cmbANTIBAN.setForeground(Color.BLACK);
+            cmbANTIBAN.setForeground(Color.LIGHT_GRAY);
             cmbANTIBAN.setSelectedIndex(1);
             cmbANTIBAN.setBounds(125, 104, 180, 20);
             cmbANTIBAN.setFont(new Font("Arial", Font.PLAIN, 14));
             add(cmbANTIBAN);
 
             lblLIGHTMETHOD = new JLabel("Lighting method");
-            lblLIGHTMETHOD.setForeground(Color.BLACK);
+            lblLIGHTMETHOD.setForeground(Color.LIGHT_GRAY);
             lblLIGHTMETHOD.setBounds(5, 128, 300, 14);
             lblLIGHTMETHOD.setFont(new Font("Arial", Font.BOLD, 14));
             add(lblLIGHTMETHOD);
 
             String[] LIGHTMETHODS = { "Tinderbox > Log", "Right click Log > Light" };
             cmbLIGHTMETHOD = new JComboBox<String>(LIGHTMETHODS);
-            cmbLIGHTMETHOD.setForeground(Color.BLACK);
+            cmbLIGHTMETHOD.setForeground(Color.LIGHT_GRAY);
             cmbLIGHTMETHOD.setSelectedIndex(0);
             cmbLIGHTMETHOD.setBounds(125, 126, 180, 20);
             cmbLIGHTMETHOD.setFont(new Font("Arial", Font.PLAIN, 14));
@@ -615,7 +589,7 @@ public class DwarfehFiremaker extends Script {
             btnStart = new JButton("Start");
             btnStart.addActionListener(new java.awt.event.ActionListener() {
                 public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    btnStartActionPerformed(evt);
+                    btnStartActionPerformed();
                 }
             });
             btnStart.setBounds(5, 152, 300, 20);
@@ -624,7 +598,7 @@ public class DwarfehFiremaker extends Script {
             setVisible(true);
         }
 
-        public void btnStartActionPerformed(ActionEvent e) {
+        public void btnStartActionPerformed() {
             switch(cmbmouseSpeed.getSelectedIndex()) {
                 case 0:
                     mouseSpeed =7;
@@ -690,7 +664,6 @@ public class DwarfehFiremaker extends Script {
             tinderboxLight = cmbLIGHTMETHOD.getSelectedIndex() == 0;
 
             logChosen = cmbLOGS.getSelectedIndex();
-            guiOpened = false;
             ui.dispose();
         }
     }
