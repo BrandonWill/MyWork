@@ -104,11 +104,8 @@ public class DwarfehFiremaker extends Script implements MouseListener {
         }
 
         Mouse.setSpeed(random(MOUSESPEED - 1, MOUSESPEED + 1));
-        log("In loop!");
         if (InventoryContainsTinderbox()) {
-            log("Contains tinderbox");
             if (InventoryContainsLog()) {
-                log("contains log");
                 if (!StandsOnFire()) {
                     STATE = "Burning logs";
                     if (TINDERBOXLIGHT) {
