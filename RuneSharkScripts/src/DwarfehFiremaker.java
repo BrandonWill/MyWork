@@ -168,7 +168,7 @@ public class DwarfehFiremaker extends Script {
     private void openBank() {
         Point bankerPos = PointByColorInBounds(banker, 0.07D, 250, midScreen);
         if (bankerPos != null) {
-            RightClick(bankerPos);
+            rightClick(bankerPos);
             sleep(random(600 + lagAdjust, 900 + lagAdjust));
             Mouse.click(bankerPos.x + random(-10, 10), bankerPos.y + random(40, 50));
             failToOpenBank++;
@@ -183,7 +183,7 @@ public class DwarfehFiremaker extends Script {
     private void withdrawLogs() {
         failToOpenBank = 0;
         Point rClick = randomPointInRect(LOGSINBANKSPOT);
-        RightClick(rClick);
+        rightClick(rClick);
         sleep(600 + lagAdjust, 900 + lagAdjust);
         Mouse.click(rClick.x + random(-10, 10), rClick.y + random(105, 115));
         sleep(600 + lagAdjust, 900 + lagAdjust);
@@ -216,8 +216,8 @@ public class DwarfehFiremaker extends Script {
     private Point PointByColorInBounds(Color color, double tolerance, double maxDist, Point mid) {
         Point closest = null;
         double dist = 0;
-        java.util.List<Point> colorloc = ImageUtil.getPointsWithColor(Game.getImage(), color, tolerance);
-        for (Point point : colorloc) {
+        java.util.List<Point> colorLoc = ImageUtil.getPointsWithColor(Game.getImage(), color, tolerance);
+        for (Point point : colorLoc) {
             double distTmp = getDistanceBetween(point, mid);
             if (distTmp < maxDist) {
                 if (closest == null) {
@@ -232,14 +232,14 @@ public class DwarfehFiremaker extends Script {
         return closest;
     }
 
-    private Point getRandomPoint(Color color, double tolerance, int MINdist,int maxDist, Point mid) {
+    private Point getRandomPoint(Color color, double tolerance, int minDist,int maxDist, Point mid) {
         java.util.List<Point> loc = ImageUtil.getPointsWithColor(Game.getImage(), color, tolerance);
         Point randomPoint = null;
         while (randomPoint == null && loc != null) {
             try {
                 Point randomPointGuess = loc.get(random(0, loc.size()));
                 double dist = getDistanceBetween(randomPointGuess, mid);
-                if (dist > MINdist && dist < maxDist) {
+                if (dist > minDist && dist < maxDist) {
                     randomPoint = randomPointGuess;
                 }
             } catch (Throwable ignored) { }
@@ -261,7 +261,7 @@ public class DwarfehFiremaker extends Script {
                     } else {
                         yChange = 45;
                     }
-                    RightClick(nextLog);
+                    rightClick(nextLog);
                     sleep(500 + lagAdjust, 750 + lagAdjust);
                     Mouse.click(nextLog.x + random(-10, 10), nextLog.y + random(yChange - 3, yChange + 3));
                     logsLit++;
@@ -320,7 +320,7 @@ public class DwarfehFiremaker extends Script {
         return new Point(RECT.x + random(0, RECT.width), RECT.y + random(0, RECT.height));
     }
 
-    public static void RightClick(Point point) {
+    public static void rightClick(Point point) {
         if (!Game.isPointValid(point.x, point.y)) {
             return;
         }
@@ -388,12 +388,12 @@ public class DwarfehFiremaker extends Script {
         return hours + "h " + minutes + "m " + seconds + "s";
     }
     //OCR
-    public class num {
+    public class Num {
         private Point[] points;
         private  String num;
 
 
-        public num(Point[] points, String number) {
+        public Num(Point[] points, String number) {
             this.points = points;
             this.num = number;
         }
@@ -427,11 +427,11 @@ public class DwarfehFiremaker extends Script {
 
     private Point[] n = {new Point(0, 0), new Point(2, 0), new Point(3, 0), new Point(0, 1), new Point(1, 1), new Point(4, 1), new Point(0, 2), new Point(4, 2), new Point(0, 3),
             new Point(4, 3), new Point(0, 4), new Point(4, 4), new Point(4, 4), new Point(0, 5), new Point(5, 5)};
-    private num[] allNumbers = {new num(Y, "Y"), new num(o, "o"), new num(u, "u"), new num(c, "c"), new num(a, "a"), new num(n, "n")};
+    private Num[] allNumbers = {new Num(Y, "Y"), new Num(o, "o"), new Num(u, "u"), new Num(c, "c"), new Num(a, "a"), new Num(n, "n")};
 
     private final Color BLACK = new Color(0, 0, 0);
 
-    void findNumber(num number, ArrayList<Numbers> numbF, Rectangle rec) {
+    void findNumber(Num number, ArrayList<Numbers> numbF, Rectangle rec) {
 
         for(int y = rec.y; y < rec.y + rec.height; y++) {
             for(int x = rec.x; x < rec.x + rec.width; x++) {
@@ -454,7 +454,7 @@ public class DwarfehFiremaker extends Script {
 
     String findNumberString(Rectangle rec) {
         nums.clear();
-        for (num allNumber : allNumbers) {
+        for (Num allNumber : allNumbers) {
             findNumber(allNumber, nums, rec);
         }
         return sortNumbers();

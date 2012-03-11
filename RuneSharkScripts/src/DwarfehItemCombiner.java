@@ -22,6 +22,7 @@ public class DwarfehItemCombiner extends Script {
     long startTime;
     int startingXP;
     int gained;
+    int banked = 0;
 
     @Override
     public boolean onStart() {
@@ -93,12 +94,7 @@ public class DwarfehItemCombiner extends Script {
         Point b = getSlotWithCenterColor(color2).getCenter();
         if (b != null && Inventory.BOUNDS.contains(b)) {
             Inventory.doAction(getSlotWithCenterColor(color1), numberToUse);
-//            Mouse.move(a);
             sleep(random(400, 600));
-//            Mouse.click(a, false);
-//            sleep(random(400, 600));
-//            Mouse.click(a.x, a.y+40);
-//            sleep(random(400, 600));
             Mouse.click(b, 3, 3);
             sleep(random(400, 600));
             Mouse.click(new Point(259, 428), 3, 3);
@@ -123,16 +119,17 @@ public class DwarfehItemCombiner extends Script {
     public boolean bank() {
         if (bankOpen())  {
 
+            banked += (getAmount(col3));
             if (withdrawCol1 == 1) {
                 depositAllExcept(1);
             } else {
                 depositAll();
             }
             if (withdrawCol1 > 1) {
-                withdrawItem1(withdrawCol1);
+                withdrawItem1();
                 sleep(random(1500, 2000));
             }
-            withdrawItem2(withdrawCol2);
+            withdrawItem2();
             sleep(random(1500, 2000));
             closeBank();
 
@@ -165,7 +162,7 @@ public class DwarfehItemCombiner extends Script {
         return null;
     }
 
-    public void withdrawItem1(int amount) {
+    public void withdrawItem1() {
         Mouse.clickMouse(52, 105, false);
         sleep(random(1000, 1200));
         Mouse.clickMouse(52, 182, true);
@@ -176,7 +173,7 @@ public class DwarfehItemCombiner extends Script {
 //        sleep(300);
     }
 
-    public void withdrawItem2(int amount) {
+    public void withdrawItem2() {
         Mouse.clickMouse(96, 106, false);
         sleep(random(1000, 1200));
         Mouse.clickMouse(90, 182, true);
@@ -240,6 +237,8 @@ public class DwarfehItemCombiner extends Script {
             g.drawString("Experience: " + gained + " [" + (int)((double)gained / timeSpan * 3600) + "/h]", 10, 90);
 //        }
         }
+        
+        g.drawString("Banked items: " +banked, 10, 110);
         return null;
     }
 
@@ -293,16 +292,6 @@ public class DwarfehItemCombiner extends Script {
         return (color1.getRed() - color2.getRed() < toleranceAmount && color1.getRed() - color2.getRed() > -toleranceAmount) && (color1.getBlue() - color2.getBlue() < toleranceAmount && color1.getBlue() - color2.getBlue() > -toleranceAmount) && (color1.getGreen() - color2.getGreen() < toleranceAmount && color1.getGreen() - color2.getGreen() > -toleranceAmount);
     }
 
-    public boolean doneFletching() {
-        Point[] a = ColorUtil.findAllColor(col2);
-        for (Point anA : a) {
-            if (Inventory.BOUNDS.contains(anA)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     public boolean isFletching() {
         final int amount = getAmount(col1);
         if (getAmount(col1) == amount) {
@@ -322,7 +311,6 @@ public class DwarfehItemCombiner extends Script {
 
     public static int random(long min, long max) {
         Random rand = new Random();
-        int a = (int) min;
         return (int) (rand.nextInt((int) ((max+1) - min)) + min);
     }
 
