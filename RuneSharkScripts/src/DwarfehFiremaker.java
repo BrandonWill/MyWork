@@ -16,7 +16,7 @@ public class DwarfehFiremaker extends Script {
     private Point middleMiniMap = new Point(627, 86);
 
     private Color banker = new Color(241, 230, 133);
-    private Color tinderbox = new Color(92, 90, 87);
+    private Color tinderbox = new Color(56, 48, 8);
     private Color[] log = { new Color(131, 105, 58), new Color(154, 124, 87), new Color(89, 83, 59),
             new Color(76, 49, 10), new Color(116, 93, 52), new Color(48, 155, 143) }; //0= normal, 1= oak, 2= willow, 3= maple, 4= yew, 5= magic
     private Color bankIcon = new Color(102, 78, 13);
@@ -62,6 +62,7 @@ public class DwarfehFiremaker extends Script {
         );
         //end UI
         startTime = System.currentTimeMillis();
+        log("tinderbox color: " +Inventory.getSlotAt(0).getCenterColor());
         return true;
     }
 
@@ -162,7 +163,7 @@ public class DwarfehFiremaker extends Script {
     }
 
     private boolean BankIsOpen() {
-        return ColorIsInBounds(log[logChosen], 0.03D, 20, new Point(52, 107));
+        return Bank.isOpen();
     }
 
     private void openBank() {
@@ -248,28 +249,18 @@ public class DwarfehFiremaker extends Script {
     }
 
     private void burnLog() {
-        Point tinderboxPos = getSlotWithCenterColor(tinderbox, 5).getCenter();
         Point nextLog = getSlotWithCenterColor(log[logChosen], 5).getCenter();
         switch (Boolean.toString(tinderboxLight).equals("true") ? 1 : 0) {
             case 0:
                 if (nextLog != null) {
-                    int yChange;
-                    if (pointInRect(nextLog, SIXTHROW)) {
-                        yChange = 30;
-                    } else if (pointInRect(nextLog, SEVENTHROW)) {
-                        yChange = -15;
-                    } else {
-                        yChange = 45;
-                    }
-                    rightClick(nextLog);
-                    sleep(500 + lagAdjust, 750 + lagAdjust);
-                    Mouse.click(nextLog.x + random(-10, 10), nextLog.y + random(yChange - 3, yChange + 3));
+                    Inventory.doAction(getSlotWithCenterColor(log[logChosen], 5), getSlotWithCenterColor(log[logChosen], 5).getIndex() <= 19 ? 2 : getSlotWithCenterColor(log[logChosen], 5).getIndex() <= 23 ? 1 : -1);
                     logsLit++;
-                    sleep(1250 + lagAdjust, 1500 + lagAdjust);
+                    sleep(1750 + lagAdjust, 2500 + lagAdjust);
                 }
                 break;
 
             case 1:
+                Point tinderboxPos = getSlotWithCenterColor(tinderbox, 5).getCenter();
                 if (tinderboxPos != null && nextLog != null) {
                     Mouse.click(tinderboxPos);
                     sleep(500 + lagAdjust, 750 + lagAdjust);
@@ -312,12 +303,12 @@ public class DwarfehFiremaker extends Script {
         return amount;
     }
 
-    private boolean pointInRect(Point point, Rectangle RECT) {
-        return point.x >= RECT.x && point.x <= (RECT.x + RECT.width) && point.y >= RECT.y && point.y <= (RECT.y + RECT.height);
+    private boolean pointInRect(Point point, Rectangle rect) {
+        return point.x >= rect.x && point.x <= (rect.x + rect.width) && point.y >= rect.y && point.y <= (rect.y + rect.height);
     }
 
-    private Point randomPointInRect(Rectangle RECT) {
-        return new Point(RECT.x + random(0, RECT.width), RECT.y + random(0, RECT.height));
+    private Point randomPointInRect(Rectangle rect) {
+        return new Point(rect.x + random(0, rect.width), rect.y + random(0, rect.height));
     }
 
     public static void rightClick(Point point) {
