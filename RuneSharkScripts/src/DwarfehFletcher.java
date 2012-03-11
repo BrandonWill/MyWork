@@ -26,71 +26,63 @@ public class DwarfehFletcher extends Script {
 
     @Override
     public int loop() {
-        if (!guiDone) {
-            log("GUI completed!");
-            return 300;
-        }
-        if (col1 == null) {
-            col1 = Inventory.getSlotAt(0).getCenterColor();
-            log("Found 1st color: " +col1);
-            withdrawCol1 = getAmount(col1);
-            for (int i = 0; i < 28; i++) {
-                if (col2 == null && Inventory.getSlotAt(i).getCenterColor().getRGB() != col1.getRGB()) {
-                    col2 = Inventory.getSlotAt(i).getCenterColor();
-                    log("Found a 2nd color: " +col2);
-                    withdrawCol2 = getAmount(col2);
-                }
-
+        try {
+            if (!guiDone) {
+                log("GUI completed!");
+                return 300;
             }
-        }
-        if (!isFletching() && getAmount(col2) > 0) {
-            //use item 1
-            Point[] a = ColorUtil.findAllColor(col2);
-            for (Point anA : a) {
-                if (Inventory.BOUNDS.contains(anA)) {
-                    //using knife on log
-                    Mouse.click(Inventory.getSlotAt(0).getCenter());
-                    sleep(400);
-                    Mouse.click(anA);
-                    sleep(400);
-                    //makes all
-                    Mouse.click(new Point(259, 428), 3, 3);
-                    sleep(400);
-                    if (isFletching()) {
-                        break;
-                    }
-                }
-            }
-        }
-
-        if (getAmount(col2) == 0) {
-            if (col3 == null) {
+            if (col1 == null) {
+                col1 = Inventory.getSlotAt(0).getCenterColor();
+                log("Found 1st color: " +col1);
+                withdrawCol1 = getAmount(col1);
                 for (int i = 0; i < 28; i++) {
-                    if (col3 == null && Inventory.getSlotAt(i).getCenterColor().getRGB() != col1.getRGB() && Inventory.getSlotAt(i).getCenterColor().getRGB() != col2.getRGB()) {
-                        col3 = Inventory.getSlotAt(i).getCenterColor();
-                        log("Found a 3rd color: " +col3);
-                        i = 28;
+                    if (col2 == null && Inventory.getSlotAt(i).getCenterColor().getRGB() != col1.getRGB()) {
+                        col2 = Inventory.getSlotAt(i).getCenterColor();
+                        log("Found a 2nd color: " +col2);
+                        withdrawCol2 = getAmount(col2);
                     }
+
                 }
             }
+            if (!isFletching() && getAmount(col1) > 0) {
+                log("Using items on each other");
+                useItem(col1, col2);
+            }
 
-            bank();
+            if (getAmount(col1) == 0) {
+                if (col3 == null) {
+                    for (int i = 0; i < 28; i++) {
+                        if (col3 == null && Inventory.getSlotAt(i).getCenterColor().getRGB() != col1.getRGB() && Inventory.getSlotAt(i).getCenterColor().getRGB() != col2.getRGB()) {
+                            col3 = Inventory.getSlotAt(i).getCenterColor();
+                            log("Found a 3rd color: " +col3);
+                            i = 28;
+                        }
+                    }
+                }
+                log("Attempting to bank");
+                bank();
 
-        }
+            }
+        } catch (Throwable e) { }
         return 0;
     }
 
-//    public void useItem(Color color1, Color color2) {
-//        //use item 2
-//        Point a = Inventory.getSlotWithColor(color1).getCenter();
-//        Point b = .Inventory.getSlotWithColor(color2).getCenter();
-//        Mouse.click(a, 3, 3);
-//        sleep(random(400, 600));
-//        Mouse.click(b, 3, 3);
-//        sleep(random(400, 600));
-//        Mouse.click(new Point(259, 428), 3, 3);
-//        sleep(random(500, 700));
-//    }
+    public void useItem(Color color1, Color color2) {
+        Point a = getSlotWithCenterColor(color1).getCenter();
+        Point b = getSlotWithCenterColor(color2).getCenter();
+        if (b != null && Inventory.BOUNDS.contains(b)) {
+            Mouse.move(a);
+            sleep(random(400, 600));
+            Mouse.click(a, false);
+            sleep(random(400, 600));
+            Mouse.click(a.x, a.y+40);
+            sleep(random(400, 600));
+            Mouse.click(b, 3, 3);
+            sleep(random(400, 600));
+            Mouse.click(new Point(259, 428), 3, 3);
+            sleep(random(500, 700));
+        }
+    }
 
     public boolean bankOpen() {
         if (Bank.isOpen()) {
@@ -108,47 +100,53 @@ public class DwarfehFletcher extends Script {
     public boolean bank() {
         if (!Bank.isOpen()) {
             bankOpen();
-            bank();
         }
         if (withdrawCol1 == 1) {
             depositAllExcept(1);
         } else {
             depositAll();
         }
-        if (getAmount(col1) != withdrawCol1) {
+//        if (getAmount(col1) != withdrawCol1) {
             withdrawItem1(withdrawCol1);
-        }
-        if (getAmount(col2) != withdrawCol2) {
+            sleep(random(1500, 2000));
+//        }
+//        if (getAmount(col2) != withdrawCol2) {
             withdrawItem2(withdrawCol2);
-        }
-        if (getAmount(col1) == withdrawCol1 && getAmount(col2) == withdrawCol2) {
-            Bank.close();
-        }
-        if (Inventory.isFull() && getAmount(col1) > withdrawCol1) {
-            Inventory.doAction(getSlotWithCenterColor(col1), 6);
-        }
-        if (Inventory.isFull() && getAmount(col2) > withdrawCol2) {
-            Inventory.doAction(getSlotWithCenterColor(col2), 6);
-        }
+            sleep(random(1500, 2000));
+//        }
+        closeBank();
+//        if (getAmount(col1) > withdrawCol1) {
+//            Inventory.doAction(getSlotWithCenterColor(col1), 6);
+//        }
+//        if (getAmount(col2) > withdrawCol2) {
+//            Inventory.doAction(getSlotWithCenterColor(col2), 6);
+//        }
 
-        return getAmount(col1) == withdrawCol1 && getAmount(col2) == withdrawCol2 && !Bank.isOpen();
+        return true; //&& getAmount(col2) == withdrawCol2
     }
 
     public boolean depositAllExcept(int slotNumber) {
-        Inventory.doAction(slotNumber, 6);
+        Inventory.doAction(slotNumber < 27 ? slotNumber+1: slotNumber-1, 6);
         sleep(random(800, 1000));
         return getAmount(Inventory.getSlotAt(slotNumber).getCenterColor()) == 0;
 
     }
     
+    void closeBank() {
+        log("Closing bank");
+        Mouse.move(random(487, 489), random(33, 35));
+        sleep(random(1300, 1700));
+        Mouse.click();
+    }
+
     public Inventory.Slot getSlotWithCenterColor(Color color) {
         for (Inventory.Slot a : Inventory.Slot.values()) {
-            if (a.getCenterColor().equals(color)) {
+            if (a.getCenterColor().getRGB() == color.getRGB()) {
                 return a;
             }
         }
         return null;
-    } 
+    }
 
     public void withdrawItem1(int amount) {
         Mouse.clickMouse(52, 105, false);
@@ -179,28 +177,25 @@ public class DwarfehFletcher extends Script {
         Graphics2D g = (Graphics2D) graphics;
         g.setColor(Color.yellow);
         if (col1 != null) {
-            Point[] a = ColorUtil.findAllColor(col1);
-            for (Point anA : a) {
-                if (Inventory.BOUNDS.contains(anA)) {
-                    g.drawRect(anA.x-5, anA.y-5, 20, 20);
+            for (Inventory.Slot anA : Inventory.Slot.values()) {
+                if (anA.getCenterColor().getRGB() == col1.getRGB()) {
+                    g.drawRect(anA.getBounds().x, anA.getBounds().y, anA.getBounds().width, anA.getBounds().height);
                 }
             }
         }
         g.setColor(Color.red);
         if (col2 != null) {
-            Point[] a = ColorUtil.findAllColor(col2);
-            for (Point anA : a) {
-                if (Inventory.BOUNDS.contains(anA)) {
-                    g.drawRect(anA.x-5, anA.y-5, 20, 20);
+            for (Inventory.Slot anA : Inventory.Slot.values()) {
+                if (anA.getCenterColor().getRGB() == col2.getRGB()) {
+                    g.drawRect(anA.getBounds().x, anA.getBounds().y, anA.getBounds().width, anA.getBounds().height);
                 }
             }
         }
         g.setColor(Color.green);
         if (col3 != null) {
-            Point[] a = ColorUtil.findAllColor(col3);
-            for (Point anA : a) {
-                if (Inventory.BOUNDS.contains(anA)) {
-                    g.drawRect(anA.x-5, anA.y-5, 20, 20);
+            for (Inventory.Slot anA : Inventory.Slot.values()) {
+                if (anA.getCenterColor().getRGB() == col3.getRGB()) {
+                    g.drawRect(anA.getBounds().x, anA.getBounds().y, anA.getBounds().width, anA.getBounds().height);
                 }
             }
         }
@@ -210,7 +205,7 @@ public class DwarfehFletcher extends Script {
     public int getAmount(Color colors) {
         int amount = 0;
         for (int i = 0; i < 28; i++) {
-            if (areColorsClose(Inventory.getSlotAt(i).getCenterColor(), colors, 0)) {
+            if (areColorsClose(Inventory.getSlotAt(i).getCenterColor(), colors, 2)) {
                 amount += 1;
             }
         }
@@ -232,14 +227,14 @@ public class DwarfehFletcher extends Script {
     }
 
     public boolean isFletching() {
-        final int amount = getAmount(col2);
-        if (getAmount(col2) == amount) {
+        final int amount = getAmount(col1);
+        if (getAmount(col1) == amount) {
             sleep(random(800, 1300));
-            if (getAmount(col2) == amount) {
+            if (getAmount(col1) == amount) {
                 sleep(random(700, 1000));
-                if (getAmount(col2) == amount) {
+                if (getAmount(col1) == amount) {
                     sleep(random(500, 800));
-                    if (getAmount(col2) == amount) {
+                    if (getAmount(col1) == amount) {
                         return false;
                     }
                 }
