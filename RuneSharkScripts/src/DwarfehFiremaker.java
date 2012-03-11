@@ -1,4 +1,5 @@
 import api.methods.*;
+import bot.Bot;
 import bot.script.Script;
 import bot.script.ScriptManifest;
 
@@ -8,19 +9,16 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Random;
+import java.util.*;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 
 @ScriptManifest(authors = { "Dwarfeh" }, name = "Dwarfeh's Firemaker", version = 0.1, description = "I MAKEITY THE FIRE",  category = "Firemaking")
 public class DwarfehFiremaker extends Script implements MouseListener {
 
-    private java.util.List<Point> TINDERBOXLOCS = new LinkedList();
-    private java.util.List<Point> LOGLOCS = new LinkedList();
+    private java.util.List<Point> TINDERBOXLOCS = new LinkedList<Point>();
+    private java.util.List<Point> LOGLOCS = new LinkedList<Point>();
 
     private String STATE;
 
@@ -32,14 +30,16 @@ public class DwarfehFiremaker extends Script implements MouseListener {
     private Color BANKER = new Color(241, 230, 133);
     private Color TINDERBOX = new Color(92, 90, 87);
     private Color[] LOG = { new Color(131, 105, 58), new Color(154, 124, 87), new Color(89, 83, 59),
-            new Color(120, 85, 38), new Color(116, 93, 52), new Color(48, 155, 143) }; //0= normal, 1= oak, 2= willow, 3= maple, 4= yew, 5= magic
+            new Color(76, 49, 10), new Color(116, 93, 52), new Color(48, 155, 143) }; //0= normal, 1= oak, 2= willow, 3= maple, 4= yew, 5= magic
     private Color BANKICON = new Color(102, 78, 13);
+
+    //OLD MAPLE 120, 85, 38
 
     private double[] XPPERLOG = {40, 60, 90, 135, 202.5, 303.8};
 
     private int LOGCHOSEN;
     private int ANTIBANAMOUNT;
-    private int MOUSESPEED;
+    private int MOUSESPEED = 0;
     private int LAGADJUST;
     private int LOGSLIT;
     private int FAILTOOPENBANK = 0;
@@ -64,42 +64,52 @@ public class DwarfehFiremaker extends Script implements MouseListener {
         log("Starting up Dwarfeh's FireMaker");
         log("Please post feedback on the thread !");
         log("Remember it only works at Fist of Guthix !");
+        log("Color for Maple log: " +Inventory.getSlotAt(27).getCenterColor());
         STATE = "Starting up Dwarfeh's FireMaker";
         STARTTIME = System.currentTimeMillis();
         //UI
-        try {
-            SwingUtilities.invokeAndWait(new Runnable() {
-                public void run() {
-                    ui = new UserInterface();
-                }
-            });
-        } catch (InterruptedException ex) {
-        } catch (InvocationTargetException ex) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                ui = new UserInterface();
+                ui.setVisible(true);
+            }
         }
-        ui.dispose();
-        ui = null;
+        );
+        Bot.getCurrent().getCanvas().addMouseListener(this);
         //end UI
-        Game.clickCompass();
-        Camera.moveUp(random(2000, 2200));
         STARTTIME = System.currentTimeMillis();
         return true;
     }
+    
 
     @Override
     public void onFinish() {
+        Bot.getCurrent().getCanvas().removeMouseListener(this);
         log("> Thanks for using Dwarfeh's FireMaker <");
         log("> Please post the screenshot on the thread! <");
     }
 
+    boolean didDo = false;
     @Override
     public int loop() {
-        while(GUIOPENED){
-            sleep(1000);
+        try {
+        if (MOUSESPEED == 0){
+            if (!didDo) {
+//                Game.clickCompass();
+//                Camera.moveUp(random(2000, 2200));
+                didDo = true;
+            }
+            log("Speed is 0... returning");
+            return 300;
         }
+
         Mouse.setSpeed(random(MOUSESPEED - 1, MOUSESPEED + 1));
+        log("In loop!");
         if (InventoryContainsTinderbox()) {
+            log("Contains tinderbox");
             if (InventoryContainsLog()) {
-                if (StandsOnFire() == false) {
+                log("contains log");
+                if (!StandsOnFire()) {
                     STATE = "Burning logs";
                     if (TINDERBOXLIGHT) {
                         BurnOneLogWithTinderbox();
@@ -129,6 +139,7 @@ public class DwarfehFiremaker extends Script implements MouseListener {
             STATE = "We don't have a tinderbox";
         }
         AntiBan();
+        }    catch (Exception e) {}
         return 1;
     }
 
@@ -166,7 +177,7 @@ public class DwarfehFiremaker extends Script implements MouseListener {
             Mouse.click(BANKICONPOS);
             for (int i = 0; i < 10; i++) {
                 boolean SPOTTEDBANKER = NearBanker();
-                if (SPOTTEDBANKER == false) {
+                if (!SPOTTEDBANKER) {
                     sleep(random(500 + LAGADJUST, 600 + LAGADJUST));
                 }
             }
@@ -211,7 +222,7 @@ public class DwarfehFiremaker extends Script implements MouseListener {
     private boolean StandsOnFire() {
         Rectangle YOUBOUNDS = new Rectangle(8, 442, 50, 12);
         String OCR = findNumberString(YOUBOUNDS);
-        if ("Yocuca".equals(OCR) && IGNOREYOUCAN == false) {
+        if ("Yocuca".equals(OCR) && !IGNOREYOUCAN) {
             IGNOREYOUCAN = true;
             return true;
         }
@@ -228,10 +239,7 @@ public class DwarfehFiremaker extends Script implements MouseListener {
     }
     private boolean ColorIsInBounds(Color COLOR, double TOLERANCE, double MAXDIST, Point MID) {
         Point POINT = PointByColorInBounds(COLOR, TOLERANCE, MAXDIST, MID);
-        if (POINT != null) {
-            return true;
-        }
-        return false;
+        return POINT != null;
     }
 
     private Point PointByColorInBounds(Color COLOR, double TOLERANCE, double MAXDIST, Point MID) {
@@ -274,7 +282,7 @@ public class DwarfehFiremaker extends Script implements MouseListener {
 
     private void BurnOneLogWithTinderbox() {
         Point TINDERBOXPOS = TinderboxPos();
-        Point NEXTLOG = LogPos();
+        Point NEXTLOG = getSlotWithCenterColor(LOG[LOGCHOSEN], 5).getCenter();
         if (TINDERBOXPOS != null && NEXTLOG != null) {
             Mouse.click(TINDERBOXPOS);
             sleep(500 + LAGADJUST, 750 + LAGADJUST);
@@ -285,7 +293,7 @@ public class DwarfehFiremaker extends Script implements MouseListener {
     }
 
     private void BurnOneLogWithRightClick() {
-        Point NEXTLOG = LogPos();
+        Point NEXTLOG = getSlotWithCenterColor(LOG[LOGCHOSEN], 5).getCenter();
         if (NEXTLOG != null) {
             int YCHANGE;
             if (PointInRect(NEXTLOG, SIXTHROW)) {
@@ -303,18 +311,39 @@ public class DwarfehFiremaker extends Script implements MouseListener {
         }
     }
 
-    private Point LogPos() {
-        LOGLOCS = ImageUtil.getPointsWithColor(Game.getImage(), LOG[LOGCHOSEN], 0.02D);
-        for (Point POINT : LOGLOCS) {
-            for (int CURRENT = 0; CURRENT < 28; CURRENT++) {
-                if (PointInRect(POINT, Inventory.getSlotAt(CURRENT).getBounds())) {
-                    Point RandomPosInLog = new Point(Inventory.getSlotAt(CURRENT).getCenter().x + random(-3, 3),
-                            Inventory.getSlotAt(CURRENT).getCenter().y + random(-3, 3));
-                    return RandomPosInLog;
-                }
+//    private Point LogPos() {
+//        LOGLOCS = ImageUtil.getPointsWithColor(Game.getImage(), LOG[LOGCHOSEN], 0.02D);
+//        for (Point POINT : LOGLOCS) {
+//            for (int CURRENT = 0; CURRENT < 28; CURRENT++) {
+//                if (PointInRect(POINT, Inventory.getSlotAt(CURRENT).getBounds())) {
+//                    return new Point(Inventory.getSlotAt(CURRENT).getCenter().x + random(-3, 3),
+//                            Inventory.getSlotAt(CURRENT).getCenter().y + random(-3, 3));
+//                }
+//            }
+//        }
+//        return null;
+//    }
+
+    public Inventory.Slot getSlotWithCenterColor(Color color, int tolerance) {
+        for (Inventory.Slot a : Inventory.Slot.values()) {
+            if (areColorsClose(a.getCenterColor(), color, 5)) {
+                return a;
             }
         }
         return null;
+    }    
+    
+    private Point LogPos() {
+        for (Inventory.Slot a : Inventory.Slot.values()) {
+            if (areColorsClose(a.getCenterColor(), LOG[LOGCHOSEN], 3)) {
+                return new Point(a.getCenter().x + random(-3, 3), a.getCenter().y + random(-3, 3));
+            }
+        }
+        return null;
+    }
+
+    public boolean areColorsClose(Color color1, Color color2, int toleranceAmount) {
+        return (color1.getRed() - color2.getRed() < toleranceAmount && color1.getRed() - color2.getRed() > -toleranceAmount) && (color1.getBlue() - color2.getBlue() < toleranceAmount && color1.getBlue() - color2.getBlue() > -toleranceAmount) && (color1.getGreen() - color2.getGreen() < toleranceAmount && color1.getGreen() - color2.getGreen() > -toleranceAmount);
     }
 
     private Point TinderboxPos() {
@@ -322,9 +351,8 @@ public class DwarfehFiremaker extends Script implements MouseListener {
         for (Point POINT : TINDERBOXLOCS) {
             for (int CURRENT = 0; CURRENT < 28; CURRENT++) {
                 if (PointInRect(POINT, Inventory.getSlotAt(CURRENT).getBounds())) {
-                    Point RandomPosInTBOX = new Point(Inventory.getSlotAt(CURRENT).getCenter().x + random(-5, 5),
+                    return new Point(Inventory.getSlotAt(CURRENT).getCenter().x + random(-5, 5),
                             Inventory.getSlotAt(CURRENT).getCenter().y + random(-5, 5));
-                    return RandomPosInTBOX;
                 }
             }
         }
@@ -332,7 +360,7 @@ public class DwarfehFiremaker extends Script implements MouseListener {
     }
 
     private boolean InventoryContainsLog() {
-        return ItemCountInInventory(LOG[LOGCHOSEN], 0.02D) != 0;
+        return ItemCountInInventory(LOG[LOGCHOSEN], 0.01D) != 0;
     }
 
     private boolean InventoryContainsTinderbox() {
@@ -356,10 +384,7 @@ public class DwarfehFiremaker extends Script implements MouseListener {
     }
 
     private boolean PointInRect(Point POINT, Rectangle RECT) {
-        if (POINT.x >= RECT.x && POINT.x <= (RECT.x + RECT.width) && POINT.y >= RECT.y && POINT.y <= (RECT.y + RECT.height)) {
-            return true;
-        }
-        return false;
+        return POINT.x >= RECT.x && POINT.x <= (RECT.x + RECT.width) && POINT.y >= RECT.y && POINT.y <= (RECT.y + RECT.height);
     }
 
     private Point RandomPointInRect(Rectangle RECT) {
@@ -367,7 +392,6 @@ public class DwarfehFiremaker extends Script implements MouseListener {
     }
 
     public static void RightClick(Point POINT) {
-        boolean left = false;
         if (!Game.isPointValid(POINT.x, POINT.y)) {
             return;
         }
@@ -398,56 +422,80 @@ public class DwarfehFiremaker extends Script implements MouseListener {
 
     @Override
     public Graphics doPaint(Graphics g1) {
-        Graphics2D g = (Graphics2D)g1;
-        int FIRSTY = 390;
-        int FIRSTX = 20;
-        if (SHOWPAINT) {
-            g.setColor(color1);
-            g.fillRoundRect(10, 348, 483, 123, 16, 16);
-            g.setColor(color2);
-            g.setStroke(stroke1);
-            g.drawRoundRect(10, 348, 483, 123, 16, 16);
-            g.setFont(font1);
-            g.setColor(color3);
-            g.drawString("Dwarfeh's FireMaker", 146, 372);
-            g.setColor(color2);
-            g.drawString("Dwarfeh's FireMaker", 145, 371);
-            g.drawLine(23, 361, 130, 361);
-            g.drawLine(400, 361, 481, 361);
-            g.setFont(font2);
-            g.drawString("Time running: " + SortTime(System.currentTimeMillis() - STARTTIME), FIRSTX, FIRSTY);
-            g.drawString("Current state: " + STATE, FIRSTX, FIRSTY + 18);
-            g.drawString("Logs lit: " + LOGSLIT , FIRSTX, FIRSTY + 36);
-            g.drawString("Firemaking XP gained: " + RoundToK(LOGSLIT * XPPERLOG[LOGCHOSEN]) + "K", FIRSTX, FIRSTY + 54);
-            g.drawString("Firemaking XP per hour: " + RoundToK(XpPerHour(LOGSLIT * XPPERLOG[LOGCHOSEN], STARTTIME)) + "K", FIRSTX, FIRSTY + 72);
-            g.drawImage(img1, 380, 280, null);
-            g.setColor(color3);
-            g.drawString("By Dwarfeh ", 328, 386);
-            g.setColor(color2);
-            g.drawString("By Dwarfeh ", 327, 385);
-            g.drawImage(ON, ONOFFSWITCH.x, ONOFFSWITCH.y, null);
+        Graphics2D g = (Graphics2D) g1;
+        g.setStroke(new BasicStroke(6));
+        g.setColor(Color.white);
+        g.draw3DRect(1, 38, 140, 150, true);
+        g.setStroke(new BasicStroke(3));
+        g.setColor(new Color(0, 0, 0, 70));
+        g.fill3DRect(1, 38, 140, 150, true);
+        g.setColor(Color.white);
 
-            for (Point POINT : TINDERBOXLOCS) {
-                for (int CURRENT = 0; CURRENT < 28; CURRENT++) {
-                    Rectangle INVBOUNDS = Inventory.getSlotAt(CURRENT).getBounds();
-                    if (PointInRect(POINT, INVBOUNDS)) {
-                        g.setColor(TINDERBOX);
-                        g.drawRect(INVBOUNDS.x, INVBOUNDS.y, INVBOUNDS.width, INVBOUNDS.height);
-                    }
-                }
-            }
-            for (Point POINT : LOGLOCS) {
-                for (int CURRENT = 0; CURRENT < 28; CURRENT++) {
-                    Rectangle INVBOUNDS = Inventory.getSlotAt(CURRENT).getBounds();
-                    if (PointInRect(POINT, INVBOUNDS)) {
-                        g.setColor(LOG[LOGCHOSEN]);
-                        g.drawRect(INVBOUNDS.x, INVBOUNDS.y, INVBOUNDS.width, INVBOUNDS.height);
-                    }
-                }
-            }
-        } else {
-            g.drawImage(OFF, ONOFFSWITCH.x, ONOFFSWITCH.y, null);
-        }
+        g.setFont(new Font("Arial", 0, 9));
+
+        g.drawRect(Mouse.getLocation().x, Mouse.getLocation().y, 10, 10);
+
+        g.drawString("Dwarfeh's Firemaker", 10, 50);
+
+        g.drawString("Running for " + SortTime(System.currentTimeMillis() - STARTTIME), 10, 70);
+
+        g.drawString("Status: " + STATE, 10, 90);
+
+        g.drawString("Logs Lit: " + LOGSLIT, 10, 110);
+
+        g.drawString("XP Gained: " + RoundToK(LOGSLIT * XPPERLOG[LOGCHOSEN]) + "K", 10, 130);
+
+        g.drawString("Firemaking XP per hour: " + RoundToK(XpPerHour(LOGSLIT * XPPERLOG[LOGCHOSEN], STARTTIME)) + "K", 10, 150);
+////        Graphics2D g = (Graphics2D)g1;
+//        int FIRSTY = 390;
+//        int FIRSTX = 20;
+//        if (SHOWPAINT) {
+//            g.setColor(color1);
+//            g.fillRoundRect(10, 348, 483, 123, 16, 16);
+//            g.setColor(color2);
+//            g.setStroke(stroke1);
+//            g.drawRoundRect(10, 348, 483, 123, 16, 16);
+//            g.setFont(font1);
+//            g.setColor(color3);
+//            g.drawString("Dwarfeh's FireMaker", 146, 372);
+//            g.setColor(color2);
+//            g.drawString("Dwarfeh's FireMaker", 145, 371);
+//            g.drawLine(23, 361, 130, 361);
+//            g.drawLine(400, 361, 481, 361);
+//            g.setFont(font2);
+//            g.drawString("Time running: " + SortTime(System.currentTimeMillis() - STARTTIME), FIRSTX, FIRSTY);
+//            g.drawString("Current state: " + STATE, FIRSTX, FIRSTY + 18);
+//            g.drawString("Logs lit: " + LOGSLIT , FIRSTX, FIRSTY + 36);
+//            g.drawString("Firemaking XP gained: " + RoundToK(LOGSLIT * XPPERLOG[LOGCHOSEN]) + "K", FIRSTX, FIRSTY + 54);
+//            g.drawString("Firemaking XP per hour: " + RoundToK(XpPerHour(LOGSLIT * XPPERLOG[LOGCHOSEN], STARTTIME)) + "K", FIRSTX, FIRSTY + 72);
+//            g.drawImage(img1, 380, 280, null);
+//            g.setColor(color3);
+//            g.drawString("By Dwarfeh ", 328, 386);
+//            g.setColor(color2);
+//            g.drawString("By Dwarfeh ", 327, 385);
+//            g.drawImage(ON, ONOFFSWITCH.x, ONOFFSWITCH.y, null);
+//
+//            for (Point POINT : TINDERBOXLOCS) {
+//                for (int CURRENT = 0; CURRENT < 28; CURRENT++) {
+//                    Rectangle INVBOUNDS = Inventory.getSlotAt(CURRENT).getBounds();
+//                    if (PointInRect(POINT, INVBOUNDS)) {
+//                        g.setColor(TINDERBOX);
+//                        g.drawRect(INVBOUNDS.x, INVBOUNDS.y, INVBOUNDS.width, INVBOUNDS.height);
+//                    }
+//                }
+//            }
+//            for (Point POINT : LOGLOCS) {
+//                for (int CURRENT = 0; CURRENT < 28; CURRENT++) {
+//                    Rectangle INVBOUNDS = Inventory.getSlotAt(CURRENT).getBounds();
+//                    if (PointInRect(POINT, INVBOUNDS)) {
+//                        g.setColor(LOG[LOGCHOSEN]);
+//                        g.drawRect(INVBOUNDS.x, INVBOUNDS.y, INVBOUNDS.width, INVBOUNDS.height);
+//                    }
+//                }
+//            }
+//        } else {
+//            g.drawImage(OFF, ONOFFSWITCH.x, ONOFFSWITCH.y, null);
+//        }
         return null;
     }
 
@@ -484,11 +532,7 @@ public class DwarfehFiremaker extends Script implements MouseListener {
 
     public void mouseClicked(MouseEvent e) {
         if (PointInRect(e.getPoint(), ONOFFSWITCH)) {
-            if (SHOWPAINT) {
-                SHOWPAINT = false;
-            } else {
-                SHOWPAINT = true;
-            }
+            SHOWPAINT = !SHOWPAINT;
         }
     }
 
@@ -572,8 +616,8 @@ public class DwarfehFiremaker extends Script implements MouseListener {
     }
     String findNumberString(Rectangle rec) {
         nums.clear();
-        for(int i = 0; i < allNumbers.length; i++) {
-            findNumber(allNumbers[i], nums, rec);
+        for (NUM allNumber : allNumbers) {
+            findNumber(allNumber, nums, rec);
         }
         return sortNumbers();
     }
@@ -582,9 +626,9 @@ public class DwarfehFiremaker extends Script implements MouseListener {
         String num = "";
         while(!nums.isEmpty()) {
             NUMBERS curNum = new NUMBERS("X", 800);
-            for (int i = 0; i < nums.size(); i++) {
-                if(nums.get(i).x < curNum.x) {
-                    curNum = nums.get(i);
+            for (NUMBERS num1 : nums) {
+                if (num1.x < curNum.x) {
+                    curNum = num1;
                 }
             }
             num += curNum.num;
@@ -602,22 +646,22 @@ public class DwarfehFiremaker extends Script implements MouseListener {
     //END-OCR
 
 
-    private class UserInterface extends JFrame implements ActionListener{
+    private class UserInterface extends JFrame {
         public UserInterface(){
             super("Dwarfeh's FireMaker By Dwarfeh");
             Tools();
         }
         private JLabel lblGENSET;
         private JLabel lblMOUSESPEED;
-        private JComboBox cmbMOUSESPEED;
+        private JComboBox<String> cmbMOUSESPEED;
         private JLabel lblLAGADJUST;
-        private JComboBox cmbLAGADJUST;
+        private JComboBox<String> cmbLAGADJUST;
         private JLabel lblLOGS;
-        private JComboBox cmbLOGS;
+        private JComboBox<String> cmbLOGS;
         private JLabel lblANTIBAN;
-        private JComboBox cmbANTIBAN;
+        private JComboBox<String> cmbANTIBAN;
         private JLabel lblLIGHTMETHOD;
-        private JComboBox cmbLIGHTMETHOD;
+        private JComboBox<String> cmbLIGHTMETHOD;
         private JButton btnStart;
 
         public final void Tools(){
@@ -639,7 +683,7 @@ public class DwarfehFiremaker extends Script implements MouseListener {
             add(lblMOUSESPEED);
 
             String[] MOUSESPEEDS = { "Slow", "Medium", "Fast", "Ultra fast" };
-            cmbMOUSESPEED = new JComboBox(MOUSESPEEDS);
+            cmbMOUSESPEED = new JComboBox<String>(MOUSESPEEDS);
             cmbMOUSESPEED.setForeground(Color.BLACK);
             cmbMOUSESPEED.setSelectedIndex(2);
             cmbMOUSESPEED.setBounds(125, 38, 180, 20);
@@ -653,7 +697,7 @@ public class DwarfehFiremaker extends Script implements MouseListener {
             add(lblLAGADJUST);
 
             String[] LAGADJUSTS = { "Nothing", "Minimal", "Little", "Medium", "Much" };
-            cmbLAGADJUST = new JComboBox(LAGADJUSTS);
+            cmbLAGADJUST = new JComboBox<String>(LAGADJUSTS);
             cmbLAGADJUST.setForeground(Color.BLACK);
             cmbLAGADJUST.setSelectedIndex(1);
             cmbLAGADJUST.setBounds(125, 60, 180, 20);
@@ -667,7 +711,7 @@ public class DwarfehFiremaker extends Script implements MouseListener {
             add(lblLOGS);
 
             String[] LOGS = { "Normal", "Oak", "Willow", "Maple", "Yew", "Magic" };
-            cmbLOGS = new JComboBox(LOGS);
+            cmbLOGS = new JComboBox<String>(LOGS);
             cmbLOGS.setForeground(Color.BLACK);
             cmbLOGS.setSelectedIndex(3);
             cmbLOGS.setBounds(125, 82, 180, 20);
@@ -681,7 +725,7 @@ public class DwarfehFiremaker extends Script implements MouseListener {
             add(lblANTIBAN);
 
             String[] ANTIBANAMOUNTS = { "Rarely", "Sometimes", "Medium", "Alot", "Almost always" };
-            cmbANTIBAN = new JComboBox(ANTIBANAMOUNTS);
+            cmbANTIBAN = new JComboBox<String>(ANTIBANAMOUNTS);
             cmbANTIBAN.setForeground(Color.BLACK);
             cmbANTIBAN.setSelectedIndex(1);
             cmbANTIBAN.setBounds(125, 104, 180, 20);
@@ -695,7 +739,7 @@ public class DwarfehFiremaker extends Script implements MouseListener {
             add(lblLIGHTMETHOD);
 
             String[] LIGHTMETHODS = { "Tinderbox > Log", "Right click Log > Light" };
-            cmbLIGHTMETHOD = new JComboBox(LIGHTMETHODS);
+            cmbLIGHTMETHOD = new JComboBox<String>(LIGHTMETHODS);
             cmbLIGHTMETHOD.setForeground(Color.BLACK);
             cmbLIGHTMETHOD.setSelectedIndex(0);
             cmbLIGHTMETHOD.setBounds(125, 126, 180, 20);
@@ -703,14 +747,19 @@ public class DwarfehFiremaker extends Script implements MouseListener {
             add(cmbLIGHTMETHOD);
 
             btnStart = new JButton("Start");
-            btnStart.addActionListener(this);
+            btnStart.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent evt) {
+                    btnStartActionPerformed(evt);
+                }
+            });
             btnStart.setBounds(5, 152, 300, 20);
             add(btnStart);
 
             setVisible(true);
         }
 
-        public void actionPerformed(ActionEvent e) {
+        public void btnStartActionPerformed(ActionEvent e) {
+            log("Event happened");
             if (cmbMOUSESPEED.getSelectedIndex() == 0) {
                 MOUSESPEED = 7;
             } else if (cmbMOUSESPEED.getSelectedIndex() == 1) {
@@ -752,6 +801,7 @@ public class DwarfehFiremaker extends Script implements MouseListener {
             }
             LOGCHOSEN = cmbLOGS.getSelectedIndex();
             GUIOPENED = false;
+            ui.dispose();
         }
     }
     public int random(int min, int max) {
