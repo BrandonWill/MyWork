@@ -1,8 +1,14 @@
 import api.methods.*;
 import bot.script.Script;
+import bot.script.ScriptManager;
 import bot.script.ScriptManifest;
+import util.Configuration;
 
 import java.awt.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.util.*;
 import javax.swing.*;
 
@@ -17,11 +23,10 @@ public class DwarfehFiremaker extends Script {
 
     private Color banker = new Color(241, 230, 133);
     private Color tinderbox = new Color(56, 48, 8);
-    private Color[] log = { new Color(131, 105, 58), new Color(154, 124, 87), new Color(89, 83, 59),
-            new Color(76, 49, 10), new Color(116, 93, 52), new Color(48, 155, 143) }; //0= normal, 1= oak, 2= willow, 3= maple, 4= yew, 5= magic
+    private Color[] log = { new Color(78, 58, 34), new Color(111, 84, 49), new Color(54, 48, 17),
+            new Color(76, 49, 10), new Color(62, 45, 9)}; //0= normal, 1= oak, 2= willow, 3= maple, 4= yew, 5= magic
+    //TODO Get a members acc for Magic color
     private Color bankIcon = new Color(102, 78, 13);
-
-    //OLD MAPLE 120, 85, 38
 
     private double[] xpPerLog = {40, 60, 90, 135, 202.5, 303.8};
 
@@ -50,7 +55,6 @@ public class DwarfehFiremaker extends Script {
         log("Remember it only works at Fist of Guthix !");
         STATE = "Starting up...";
         startTime = System.currentTimeMillis();
-        //UI
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 ui = new UserInterface();
@@ -58,9 +62,6 @@ public class DwarfehFiremaker extends Script {
             }
         }
         );
-        //end UI
-        startTime = System.currentTimeMillis();
-        log("tinderbox color: " +Inventory.getSlotAt(0).getCenterColor());
         return true;
     }
 
@@ -102,7 +103,7 @@ public class DwarfehFiremaker extends Script {
                 }
             } else {
                 log("Can not spot a tinderbox in the inventory");
-                STATE = "We don't have a tinderbox";
+                ScriptManager.getCurrent().stopScript();
             }
             antiBan();
         }    catch (Exception ignored) {}
@@ -134,7 +135,7 @@ public class DwarfehFiremaker extends Script {
         }
     }
 
-    private void WalkToRight() {
+    private void walkToRight() {
         sleep(random(500 + lagAdjust, 750 + lagAdjust));
         Mouse.click(randomPointInRect(WALKRIGHT));
         sleep(5000 + lagAdjust, 6500 + lagAdjust);
@@ -152,7 +153,7 @@ public class DwarfehFiremaker extends Script {
                 }
             }
         } else {
-            WalkToRight();
+            walkToRight();
         }
     }
 
@@ -182,11 +183,10 @@ public class DwarfehFiremaker extends Script {
         sleep(600 + lagAdjust, 900 + lagAdjust);
         Mouse.click(rClick.x + random(-10, 10), rClick.y + random(105, 115));
         sleep(600 + lagAdjust, 900 + lagAdjust);
-        WalkToRight();
+        walkToRight();
     }
 
     private boolean standingOnFire() {
-        Rectangle yourBounds = new Rectangle(2, 438, 166, 22);
         String OCR = RSText.findString(new Rectangle(2, 438, 166, 22), null, null).replaceAll(" ", "");
         if ("Youcantlihtairehere".equals(OCR) && !ignoreYouCan) {
             ignoreYouCan = true;
@@ -204,8 +204,7 @@ public class DwarfehFiremaker extends Script {
         return ColorIsInBounds(color, tolerance, maxDist, midScreen);
     }
     private boolean ColorIsInBounds(Color color, double tolerance, double maxDist, Point mid) {
-        Point point = PointByColorInBounds(color, tolerance, maxDist, mid);
-        return point != null;
+        return PointByColorInBounds(color, tolerance, maxDist, mid) != null;
     }
 
     private Point PointByColorInBounds(Color color, double tolerance, double maxDist, Point mid) {
@@ -362,7 +361,7 @@ public class DwarfehFiremaker extends Script {
             setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             setResizable(false);
 
-            lblGENSET = new JLabel("General settings", JLabel.CENTER);
+            lblGENSET = new JLabel("Settings", JLabel.CENTER);
             lblGENSET.setForeground(Color.BLUE);
             lblGENSET.setBounds(5, 5, 300, 30);
             lblGENSET.setFont(new Font("Arial", Font.BOLD, 18));
@@ -402,7 +401,7 @@ public class DwarfehFiremaker extends Script {
             lblLOGS.setFont(new Font("Arial", Font.BOLD, 14));
             add(lblLOGS);
 
-            String[] LOGS = { "Normal", "Oak", "Willow", "Maple", "Yew", "Magic" };
+            String[] LOGS = { "Normal", "Oak", "Willow", "Maple", "Yew"}; //"Magic"
             cmbLOGS = new JComboBox<String>(LOGS);
             cmbLOGS.setForeground(Color.LIGHT_GRAY);
             cmbLOGS.setSelectedIndex(3);
@@ -430,7 +429,7 @@ public class DwarfehFiremaker extends Script {
             lblLIGHTMETHOD.setFont(new Font("Arial", Font.BOLD, 14));
             add(lblLIGHTMETHOD);
 
-            String[] LIGHTMETHODS = { "Tinderbox > Log", "Right click Log > Light" };
+            String[] LIGHTMETHODS = { "Use Tinderbox", "Tinderbox in toolbelt" };
             cmbLIGHTMETHOD = new JComboBox<String>(LIGHTMETHODS);
             cmbLIGHTMETHOD.setForeground(Color.LIGHT_GRAY);
             cmbLIGHTMETHOD.setSelectedIndex(0);
@@ -446,7 +445,28 @@ public class DwarfehFiremaker extends Script {
             });
             btnStart.setBounds(5, 152, 300, 20);
             add(btnStart);
-
+            try {
+                String filename = Configuration.Paths.getCacheDirectory() + "\\DwarfehFireMaker.txt";
+                Scanner in = new Scanner(new BufferedReader(new FileReader(filename)));
+                String line;
+                String[] opts = {};
+                while (in.hasNext()) {
+                    line = in.next();
+                    if (line.contains(":")) {
+                        opts = line.split(":");
+                    }
+                }
+                in.close();
+                if (opts.length > 1) {
+                    cmbmouseSpeed.setSelectedIndex(Integer.parseInt(opts[0]));
+                    cmblagAdjust.setSelectedIndex(Integer.parseInt(opts[1]));
+                    cmbLOGS.setSelectedIndex(Integer.parseInt(opts[2]));
+                    cmbANTIBAN.setSelectedIndex(Integer.parseInt(opts[3]));
+                    cmbLIGHTMETHOD.setSelectedIndex(Integer.parseInt(opts[4]));
+                }
+            } catch (final Exception e2) {
+                log("Error loading settings.  If this is first time running script, ignore.");
+            }
             setVisible(true);
         }
 
@@ -516,7 +536,27 @@ public class DwarfehFiremaker extends Script {
             tinderboxLight = cmbLIGHTMETHOD.getSelectedIndex() == 0;
 
             logChosen = cmbLOGS.getSelectedIndex();
+            saveFile();
+
             ui.dispose();
+        }
+
+        void saveFile() {
+            try {
+                final BufferedWriter out = new BufferedWriter(new FileWriter(Configuration.Paths.getCacheDirectory() + "\\DwarfehFireMaker.txt"));
+                out.write((cmbmouseSpeed.getSelectedIndex())
+                        + ":" // 0
+                        + (cmblagAdjust.getSelectedIndex())
+                        + ":" // 1
+                        + (cmbLOGS.getSelectedIndex())
+                        + ":" // 2
+                        + (cmbANTIBAN.getSelectedIndex())
+                        + ":" // 3
+                        + (cmbLIGHTMETHOD.getSelectedIndex())); //22
+                out.close();
+            } catch (final Exception e1) {
+                log("Error saving setting.");
+            }
         }
     }
 
