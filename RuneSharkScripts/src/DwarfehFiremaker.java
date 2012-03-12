@@ -5,10 +5,8 @@ import bot.script.ScriptManifest;
 import util.Configuration;
 
 import java.awt.*;
-import java.awt.event.ComponentListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileReader;
@@ -16,7 +14,7 @@ import java.io.FileWriter;
 import java.util.*;
 import javax.swing.*;
 
-@ScriptManifest(authors = { "Dwarfeh" }, name = "Dwarfeh's Firemaker", version = 0.1, description = "I MAKEITY THE FIRE",  category = "Firemaking")
+@ScriptManifest(authors = { "Dwarfeh" }, name = "Dwarfeh's Firemaker", version = 1.1, description = "I MAKEITY THE FIRE",  category = "Firemaking")
 public class DwarfehFiremaker extends Script {
     private String STATE;
 
@@ -326,7 +324,7 @@ public class DwarfehFiremaker extends Script {
 
         g.drawRect(Mouse.getLocation().x, Mouse.getLocation().y, 10, 10);
 
-        g.drawString("Dwarfeh's Firemaker", 10, 50);
+        g.drawString("Dwarfeh's Firemaker version " +DwarfehFiremaker.class.getAnnotation(ScriptManifest.class).version(), 10, 50);
 
         g.drawString("Running for " + hours +":"+ minutes + ":" + seconds, 10, 70);
 
