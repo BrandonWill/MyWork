@@ -5,6 +5,10 @@ import bot.script.ScriptManifest;
 import util.Configuration;
 
 import java.awt.*;
+import java.awt.event.ComponentListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileReader;
@@ -361,6 +365,15 @@ public class DwarfehFiremaker extends Script {
             setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             setResizable(false);
 
+            addWindowListener(new WindowAdapter() {
+                public void windowClosing(WindowEvent evt) {
+                    setVisible(false);
+                    dispose();
+                    log("Frame closed. Stopping script");
+                    ScriptManager.getCurrent().stopScript();
+                }
+            });            
+
             lblGENSET = new JLabel("Settings", JLabel.CENTER);
             lblGENSET.setForeground(Color.BLUE);
             lblGENSET.setBounds(5, 5, 300, 30);
@@ -558,6 +571,8 @@ public class DwarfehFiremaker extends Script {
                 log("Error saving setting.");
             }
         }
+
+
     }
 
     public int random(int min, int max) {
