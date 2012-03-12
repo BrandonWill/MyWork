@@ -312,50 +312,29 @@ public class DwarfehFiremaker extends Script {
         g.fill3DRect(1, 38, 140, 150, true);
         g.setColor(Color.white);
 
+        Long millis = System.currentTimeMillis() - startTime;
+        Long hours = millis / (1000 * 60 * 60);
+        millis -= hours * (1000 * 60 * 60);
+        Long minutes = millis / (1000 * 60);
+        millis -= minutes * (1000 * 60);
+        Long seconds = millis / 1000;
+
         g.setFont(new Font("Arial", 0, 9));
 
         g.drawRect(Mouse.getLocation().x, Mouse.getLocation().y, 10, 10);
 
         g.drawString("Dwarfeh's Firemaker", 10, 50);
 
-        g.drawString("Running for " + SortTime(System.currentTimeMillis() - startTime), 10, 70);
+        g.drawString("Running for " + hours +":"+ minutes + ":" + seconds, 10, 70);
 
         g.drawString("Status: " + STATE, 10, 90);
 
         g.drawString("Logs Lit: " + logsLit, 10, 110);
 
-        g.drawString("xp Gained: " + roundToK(logsLit * xpPerLog[logChosen]) + "K", 10, 130);
+        g.drawString("xp Gained: " + (logsLit * xpPerLog[logChosen]), 10, 130);
 
-        g.drawString("Firemaking xp per hour: " + roundToK(xpPerHour(logsLit * xpPerLog[logChosen], startTime)) + "K", 10, 150);
+        g.drawString("Firemaking xp per hour: " + (int) ((logsLit * xpPerLog[logChosen]) * 3600000D / (System.currentTimeMillis() - startTime)), 10, 150);
         return null;
-    }
-
-    private double roundToK(Double round) {
-        return (Math.round(round * 1000) / 1000) / 1000;
-    }
-
-    private double xpPerHour(double xp, long start) {
-        return xp == 0 ? 0 : (int)(xp / ((System.currentTimeMillis() - start) / 1000L) * 3600.0D);
-    }
-
-    public static String SortTime(long millis){
-        //Returns the current time
-        long time = millis / 1000;
-        String seconds = Integer.toString((int) (time % 60));
-        String minutes = Integer.toString((int) ((time % 3600) / 60));
-        String hours = Integer.toString((int) (time / 3600));
-        for (int i = 0; i < 2; i++){
-            if (seconds.length() < 2){
-                seconds = "0" + seconds;
-            }
-            if (minutes.length() < 2){
-                minutes = "0" + minutes;
-            }
-            if (hours.length() < 2){
-                hours = "0" + hours;
-            }
-        }
-        return hours + "h " + minutes + "m " + seconds + "s";
     }
 
     private class UserInterface extends JFrame {
@@ -381,6 +360,7 @@ public class DwarfehFiremaker extends Script {
             setLayout(null);
             setSize(320, 212);
             setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            setResizable(false);
 
             lblGENSET = new JLabel("General settings", JLabel.CENTER);
             lblGENSET.setForeground(Color.BLUE);
