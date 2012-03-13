@@ -2,6 +2,8 @@ import api.methods.*;
 import api.util.ZipUtils;
 import bot.script.Script;
 import bot.script.ScriptManifest;
+import ui.BotFrame;
+import ui.LogTextArea;
 import util.Configuration;
 
 import javax.imageio.ImageIO;
@@ -45,16 +47,26 @@ public class MyTester extends Script {
 
     @Override
     public int loop() {
-        log("Color there: " +Inventory.getSlotAt(0).getCenterColor());
-        return 150;
+//        String text = RSText.findString(new Rectangle(350, 5, Game.VIEWPORT.width - 200, 20), null, null).replaceAll(" ", "");
+//        log("Text before modification: " +text);
+//        if (text.contains("xp")) {
+//            text = text.substring(text.indexOf("xp")+2);
+//            log("Setting text as: " +text.substring(text.indexOf("xp")+2));
+//        }
+//
+//        log("Options text: " +text);
+        String text = RSText.getOptionsText();
+        if (text.contains("xp")) {
+            text = text.substring(text.indexOf("xp")+2, text.length()-4).replaceAll(" ", "");
+            log("Setting text as: " +text);
+        }
+        return 150;                                         
     }
 
     @Override
     public Graphics doPaint(Graphics graphics) {
         Graphics2D g = (Graphics2D) graphics;
-        g.setStroke(new BasicStroke(6));
-        g.setColor(Color.white);
-        g.draw3DRect(2, 438, 166, 22, true);
+//        g.drawRect(350, 5, Game.VIEWPORT.width - 200, 20);
         return null;
     }
 }

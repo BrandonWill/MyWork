@@ -14,6 +14,9 @@ import java.util.List;
 public class Examtest {
 
     public static void main(String args[]) {
+        if (true) {
+            System.out.print("derp");
+        }
     }
 
 

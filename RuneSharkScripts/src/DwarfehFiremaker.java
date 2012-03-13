@@ -164,7 +164,7 @@ public class DwarfehFiremaker extends Script {
     }
 
     private void openBank() {
-        Point bankerPos = PointByColorInBounds(banker, 0.07D, 250, midScreen);
+        Point bankerPos = pointByColorInBounds(banker, 0.07D, 250, midScreen);
         if (bankerPos != null) {
             Mouse.click(bankerPos, false);
             sleep(random(600 + lagAdjust, 900 + lagAdjust));
@@ -203,13 +203,14 @@ public class DwarfehFiremaker extends Script {
     }
 
     private boolean colorIsInBounds(Color color, double tolerance, double maxDist) {
-        return ColorIsInBounds(color, tolerance, maxDist, midScreen);
-    }
-    private boolean ColorIsInBounds(Color color, double tolerance, double maxDist, Point mid) {
-        return PointByColorInBounds(color, tolerance, maxDist, mid) != null;
+        return colorIsInBounds(color, tolerance, maxDist, midScreen);
     }
 
-    private Point PointByColorInBounds(Color color, double tolerance, double maxDist, Point mid) {
+    private boolean colorIsInBounds(Color color, double tolerance, double maxDist, Point mid) {
+        return pointByColorInBounds(color, tolerance, maxDist, mid) != null;
+    }
+
+    private Point pointByColorInBounds(Color color, double tolerance, double maxDist, Point mid) {
         Point closest = null;
         double dist = 0;
         java.util.List<Point> colorLoc = ImageUtil.getPointsWithColor(Game.getImage(), color, tolerance);

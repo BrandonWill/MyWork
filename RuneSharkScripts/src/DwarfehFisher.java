@@ -34,7 +34,7 @@ public class DwarfehFisher extends Script {
 
 
     Rectangle xpGained = new Rectangle(415, 5, 90, 35);
-    int startingXP;
+    int startingXP = 0;
     int gained;
 
     private enum State {
@@ -54,12 +54,8 @@ public class DwarfehFisher extends Script {
     public boolean onStart() {
         run = true;
         login.start();
+        findXP.start();
         toggleXPDisplay();
-        String text = RSText.findString(xpGained, null, null).replaceAll(" ", "");
-        if (text.contains("+")) {
-            text = text.substring(4);
-        }
-        startingXP = text.length() >= 1 ? Integer.parseInt(text) : 0;
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 final JFrame frame = new JFrame("DwarfehFisher");
@@ -217,7 +213,6 @@ public class DwarfehFisher extends Script {
                 sleep(1000);
             }
 
-            gained = Integer.parseInt(RSText.findString(xpGained, null, null).replaceAll(" ", ""))-startingXP;
             switch (state) {
 
                 case LOOKING_FOR_SPOT:
@@ -437,7 +432,39 @@ public class DwarfehFisher extends Script {
         }
     });
 
-    public void toggleXPDisplay() {
+    Thread findXP = new Thread(new Runnable() {
+        public void run() {
+            while (run) {
+                if (startingXP == 0) {
+                    String text = RSText.getOptionsText();
+                    if (text.contains("xp") && isInteger(text.substring(text.indexOf("xp")+2, text.length()-4).replaceAll(" ", ""))) {
+                        startingXP= Integer.parseInt(text.substring(text.indexOf("xp")+2, text.length()-4).replaceAll(" ", ""));
+                        log("Setting starting xp as: " +text.substring(text.indexOf("xp")+2, text.length()-4).replaceAll(" ", ""));
+                    }
+                }
+                if (startingXP > 0) {
+                    String text = RSText.getOptionsText();
+                    if (text.contains("xp") && isInteger(text.substring(text.indexOf("xp")+2, text.length()-4).replaceAll(" ", ""))) {
+                        gained = Integer.parseInt(text.substring(text.indexOf("xp")+2, text.length()-4).replaceAll(" ", ""))-startingXP;
+                    }
+                }
+                try {
+                    sleep(random(500, 800));
+                } catch(Throwable ignored) { }
+            }
+        }
+    });
+
+    private boolean isInteger(String a) {
+        try {
+            Integer.parseInt(a);
+            return true;
+        }  catch(Throwable e) {
+            return false;
+        }
+    }
+
+    private void toggleXPDisplay() {
         try {
             String text = RSText.findString(xpGained, null, null).replaceAll(" ", "");
             if (text.contains("+")) {
@@ -484,7 +511,7 @@ public class DwarfehFisher extends Script {
         return null;
     }
 
-    public int random(int min, int max) {
+    private int random(int min, int max) {
         Random rand = new Random();
         return rand.nextInt((max+1) - min) + min;
     }
