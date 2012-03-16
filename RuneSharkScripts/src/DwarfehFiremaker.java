@@ -94,6 +94,9 @@ public class DwarfehFiremaker extends Script {
             if (mouseSpeed == 0){
                 return 300;
             }
+            if (!xpIsThere()) {
+                toggleXPDisplay();
+            }
             Mouse.setSpeed(random(mouseSpeed - 1, mouseSpeed + 1));
             if (inventoryContainsTinderbox() || !tinderboxLight) {
                 if (inventoryContainsLog()) {
@@ -392,6 +395,11 @@ public class DwarfehFiremaker extends Script {
             Mouse.click(random(532, 534), random(60, 62));
             sleep(random(600, 800));
         }
+    }
+
+    private boolean xpIsThere() {
+        String text = RSText.getOptionsText();
+        return text.substring(text.length()-4).contains("-l-i");
     }
 
     Thread login = new Thread(new Runnable() {
