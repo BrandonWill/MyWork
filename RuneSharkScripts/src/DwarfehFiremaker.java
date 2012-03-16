@@ -50,6 +50,9 @@ public class DwarfehFiremaker extends Script {
     private int startingXP;
     private volatile int gained;
     private int missing;
+    Rectangle loggedOut = new Rectangle(145, 70, 116, 20);
+
+    //TODO Make this a GUI Option
     private boolean ensureLogBurning;
 
     @Override
@@ -61,6 +64,7 @@ public class DwarfehFiremaker extends Script {
         startTime = System.currentTimeMillis();
         toggleXPDisplay();
         findXP.start();
+        login.start();
         log("Center Color at where maple log should be at slot 2 is: " +Inventory.getSlotAt(1).getCenterColor());
         log("Is it determined Maple: " +areColorsClose(Inventory.getSlotAt(1).getCenterColor(), log[3], 15));
         log("Is it a tinderbox: " +areColorsClose(Inventory.getSlotAt(1).getCenterColor(), tinderbox, 5));
@@ -79,6 +83,7 @@ public class DwarfehFiremaker extends Script {
     @Override
     public void onFinish() {
         findXP.interrupt();
+        login.interrupt();
         run = false;
         log("Thanks for using Dwarfeh's FireMaker");
     }
@@ -388,6 +393,20 @@ public class DwarfehFiremaker extends Script {
             sleep(random(600, 800));
         }
     }
+
+    Thread login = new Thread(new Runnable() {
+        public void run() {
+            while (run) {
+                if (RSText.findString(loggedOut, null, null).contains("You last logged in")) {
+                    Mouse.click(379, 460);
+                    sleep(random(600, 800));
+                }
+                try {
+                    sleep(random(500, 800));
+                } catch(Throwable ignored) { }
+            }
+        }
+    });
 
     @Override
     public Graphics doPaint(Graphics g1) {

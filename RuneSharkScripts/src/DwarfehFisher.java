@@ -34,7 +34,6 @@ public class DwarfehFisher extends Script {
     private volatile boolean isSelecting = true;
 
 
-    Rectangle xpGained = new Rectangle(415, 5, 90, 35);
     int startingXP = 0;
     int gained;
 
