@@ -9,6 +9,7 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Random;
 
@@ -52,10 +53,17 @@ public class DwarfehFisher extends Script {
     }
 
     public boolean onStart() {
+        try {
         run = true;
         login.start();
         findXP.start();
         toggleXPDisplay();
+        } catch(Throwable e) {
+            String[] a = Arrays.toString(e.getStackTrace()).split(",");
+            for (String z : a) {
+                log(z);
+            }
+        }
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 final JFrame frame = new JFrame("DwarfehFisher");
@@ -311,7 +319,11 @@ public class DwarfehFisher extends Script {
 
                     break;
             }
-        } catch (Exception ignored) {
+        } catch (Throwable e) {
+            String[] a = Arrays.toString(e.getStackTrace()).split(",");
+            for (String z : a) {
+                log(z);
+            }
         }
 
         return 1000;
@@ -434,6 +446,7 @@ public class DwarfehFisher extends Script {
 
     Thread findXP = new Thread(new Runnable() {
         public void run() {
+            try {
             while (run) {
                 if (startingXP == 0) {
                     String text = RSText.getOptionsText();
@@ -452,6 +465,12 @@ public class DwarfehFisher extends Script {
                     sleep(random(500, 800));
                 } catch(Throwable ignored) { }
             }
+            } catch (Throwable e) {
+                String[] a = Arrays.toString(e.getStackTrace()).split(",");
+                for (String z : a) {
+                    log(z);
+                }
+            }
         }
     });
 
@@ -466,12 +485,11 @@ public class DwarfehFisher extends Script {
 
     private void toggleXPDisplay() {
         try {
-            String text = RSText.findString(xpGained, null, null).replaceAll(" ", "");
-            if (text.contains("+")) {
-                text = text.substring(4);
+            String text = RSText.getOptionsText();
+            if (!text.substring(text.length()-4).contains("-l-i")) {
+                throw new Exception();
             }
-            gained = Integer.parseInt(text);
-        }  catch(Throwable e) {
+        } catch (Exception e)  {
             Mouse.move(random(532, 534), random(60, 62));
             sleep(random(600, 800));
             Mouse.click(random(532, 534), random(60, 62));

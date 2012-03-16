@@ -7,14 +7,11 @@ import util.Configuration;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.*;
 import java.util.*;
 import javax.swing.*;
 
-@ScriptManifest(authors = { "Dwarfeh" }, name = "Dwarfeh's Firemaker", version = 1.1, description = "I MAKEITY THE FIRE",  category = "Firemaking")
+@ScriptManifest(authors = { "Dwarfeh" }, name = "Dwarfeh's Firemaker", version = 1.2, description = "I MAKEITY THE FIRE",  category = "Firemaking")
 public class DwarfehFiremaker extends Script {
     private String STATE;
 
@@ -49,6 +46,11 @@ public class DwarfehFiremaker extends Script {
     private boolean tinderboxLight;
 
     private UserInterface ui;
+    private volatile boolean run = true;
+    private int startingXP;
+    private volatile int gained;
+    private int missing;
+    private boolean ensureLogBurning;
 
     @Override
     public boolean onStart() {
@@ -57,6 +59,11 @@ public class DwarfehFiremaker extends Script {
         log("Remember it only works at Fist of Guthix !");
         STATE = "Starting up...";
         startTime = System.currentTimeMillis();
+        toggleXPDisplay();
+        findXP.start();
+        log("Center Color at where maple log should be at slot 2 is: " +Inventory.getSlotAt(1).getCenterColor());
+        log("Is it determined Maple: " +areColorsClose(Inventory.getSlotAt(1).getCenterColor(), log[3], 15));
+        log("Is it a tinderbox: " +areColorsClose(Inventory.getSlotAt(1).getCenterColor(), tinderbox, 5));
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 ui = new UserInterface();
@@ -64,12 +71,15 @@ public class DwarfehFiremaker extends Script {
             }
         }
         );
+
         return true;
     }
 
 
     @Override
     public void onFinish() {
+        findXP.interrupt();
+        run = false;
         log("Thanks for using Dwarfeh's FireMaker");
     }
 
@@ -84,7 +94,9 @@ public class DwarfehFiremaker extends Script {
                 if (inventoryContainsLog()) {
                     if (!standingOnFire()) {
                         STATE = "Burning logs";
-                        burnLog();
+                        if (logsLit > 0 && logWasLit() || logsLit == 0) {
+                            burnLog();
+                        }
                     } else {
                         STATE = "Can't light fire, moving";
                         walkToCloseTile();
@@ -103,9 +115,6 @@ public class DwarfehFiremaker extends Script {
                         walkToBank();
                     }
                 }
-            } else {
-                log("Can not spot a tinderbox in the inventory");
-                ScriptManager.getCurrent().stopScript();
             }
             antiBan();
         }    catch (Exception ignored) {}
@@ -160,7 +169,7 @@ public class DwarfehFiremaker extends Script {
     }
 
     private Point BankIconOnMap() {
-        return getRandomPoint(bankIcon, 0.005D, 0, 75, middleMiniMap);
+        return getRandomPoint(bankIcon, 0.09D, 0, 75, middleMiniMap);
     }
 
     private void openBank() {
@@ -250,22 +259,85 @@ public class DwarfehFiremaker extends Script {
             case 0:
                 if (nextLog != null) {
                     Inventory.doAction(getSlotWithCenterColor(log[logChosen], 5), getSlotWithCenterColor(log[logChosen], 5).getIndex() <= 19 ? 2 : getSlotWithCenterColor(log[logChosen], 5).getIndex() <= 23 ? 1 : -1);
-                    logsLit++;
                     sleep(1750 + lagAdjust, 2500 + lagAdjust);
+                    logsLit++;
                 }
                 break;
 
             case 1:
                 Point tinderboxPos = getSlotWithCenterColor(tinderbox, 5).getCenter();
                 if (tinderboxPos != null && nextLog != null) {
-                    Mouse.click(tinderboxPos);
+                    click(tinderboxPos, random(0, 10), random(0, 10));
                     sleep(500 + lagAdjust, 750 + lagAdjust);
-                    Mouse.click(nextLog);
-                    logsLit++;
+                    click(nextLog, random(0, 10), random(0, 10));
                     sleep(1150 + lagAdjust, 1400 + lagAdjust);
+                    logsLit++;
                 }
                 break;
         }
+    }
+
+    public boolean logWasLit() {
+        if (logsLit*xpPerLog[logChosen] != gained) {
+            STATE = "Looking for a missing log...";
+            sleep(1000, 1500);
+            if (logsLit*xpPerLog[logChosen] != gained) {
+                STATE = "Missing log not found!";
+                missing++;
+                logsLit =  gained/ (int) xpPerLog[logChosen];
+            }
+        }
+        return logsLit*xpPerLog[logChosen] == gained;
+    }
+
+    Thread findXP = new Thread(new Runnable() {
+        public void run() {
+            try {
+                while (run) {
+                    if (startingXP == 0) {
+                        String text = RSText.getOptionsText();
+                        if (text.contains("xp") && isInteger(text.substring(text.indexOf("xp")+2, text.length()-4).replaceAll(" ", ""))) {
+                            log("Start xp would be this: " +(text.substring(text.indexOf("xp")+2, text.length()-4).replaceAll(" ", "")) + "-" +text.substring(text.indexOf("xp")-6, text.indexOf("xp")).replaceAll(" ", "").replaceAll("\\+", "").replaceAll("\\-", ""));
+                            startingXP= Integer.parseInt(text.substring(text.indexOf("xp")+2, text.length()-4).replaceAll(" ", "")) - Integer.parseInt(text.substring(text.indexOf("xp")-6, text.indexOf("xp")).replaceAll(" ", "").replaceAll("\\+", "").replaceAll("\\-", ""));
+                            log("Setting starting xp as: " +startingXP);
+                        }
+                    }
+                    if (startingXP > 0) {
+                        String text = RSText.getOptionsText();
+                        if (text.contains("xp") && isInteger(text.substring(text.indexOf("xp")+2, text.length()-4).replaceAll(" ", ""))) {
+                            if (Integer.parseInt(text.substring(text.indexOf("xp")+2, text.length()-4).replaceAll(" ", ""))-startingXP > 0) {
+                            gained = Integer.parseInt(text.substring(text.indexOf("xp")+2, text.length()-4).replaceAll(" ", ""))-startingXP;
+                            }
+                        }
+                    }
+//                    try {
+//                        sleep(random(500, 800));
+//                    } catch(Throwable ignored) { }
+                }
+            } catch (Throwable e) {
+                String[] a = Arrays.toString(e.getStackTrace()).split(",");
+                for (String z : a) {
+                    log(z);
+                }
+            }
+        }
+    });
+
+    private boolean isInteger(String a) {
+        try {
+            Integer.parseInt(a);
+            return true;
+        }  catch(Throwable e) {
+            return false;
+        }
+    }
+
+    public void click(final Point p, final int randX, final int randY) {
+        final Point a = new Point(random(p.x - randX, p.x + randX), random(p.y - randY, p.y + randY));
+        while (Game.isPointValid(a) && !Mouse.getLocation().equals(a)) {
+            Mouse.move(a);
+        }
+        Mouse.click();
     }
 
     public Inventory.Slot getSlotWithCenterColor(Color color, int tolerance) {
@@ -303,6 +375,20 @@ public class DwarfehFiremaker extends Script {
         return new Point(rect.x + random(0, rect.width), rect.y + random(0, rect.height));
     }
 
+    private void toggleXPDisplay() {
+        try {
+            String text = RSText.getOptionsText();
+            if (!text.substring(text.length()-4).contains("-l-i")) {
+                throw new Exception();
+            }
+        } catch (Exception e)  {
+            Mouse.move(random(532, 534), random(60, 62));
+            sleep(random(600, 800));
+            Mouse.click(random(532, 534), random(60, 62));
+            sleep(random(600, 800));
+        }
+    }
+
     @Override
     public Graphics doPaint(Graphics g1) {
         Graphics2D g = (Graphics2D) g1;
@@ -333,9 +419,24 @@ public class DwarfehFiremaker extends Script {
 
         g.drawString("Logs Lit: " + logsLit, 10, 110);
 
-        g.drawString("xp Gained: " + (logsLit * xpPerLog[logChosen]), 10, 130);
+        g.drawString("Unaccounted for logs: " +missing, 10, 130);
 
-        g.drawString("Firemaking xp per hour: " + (int) ((logsLit * xpPerLog[logChosen]) * 3600000D / (System.currentTimeMillis() - startTime)), 10, 150);
+        g.drawString("xp Gained: " + gained, 10, 150);  //(logsLit * xpPerLog[logChosen])
+
+        g.drawString("Firemaking xp per hour: " + (int) (gained * 3600000D / (System.currentTimeMillis() - startTime)), 10, 170);
+
+        if (mouseSpeed != 0) {
+            for (Inventory.Slot a : Inventory.Slot.values()) {
+                if (areColorsClose(a.getCenterColor(), tinderbox, 5)) {
+                    g.setColor(Color.BLUE);
+                    g.drawRect(a.getBounds().x, a.getBounds().y, a.getBounds().width, a.getBounds().height);
+                }
+                if (areColorsClose(a.getCenterColor(), log[logChosen], 15)) {
+                    g.setColor(Color.PINK);
+                    g.drawRect(a.getBounds().x, a.getBounds().y, a.getBounds().width, a.getBounds().height);
+                }
+            }
+        }
         return null;
     }
 
@@ -371,7 +472,7 @@ public class DwarfehFiremaker extends Script {
                     log("Frame closed. Stopping script");
                     ScriptManager.getCurrent().stopScript();
                 }
-            });            
+            });
 
             lblGENSET = new JLabel("Settings", JLabel.CENTER);
             lblGENSET.setForeground(Color.BLUE);
@@ -582,5 +683,5 @@ public class DwarfehFiremaker extends Script {
     public void sleep(int a, int b) {
         sleep(random(a, b));
     }
-    
+
 }

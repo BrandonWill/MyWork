@@ -14,8 +14,14 @@ import java.util.List;
 public class Examtest {
 
     public static void main(String args[]) {
-        if (true) {
-            System.out.print("derp");
+        try {
+            Integer.parseInt("HI");
+        }  catch(Throwable e) {
+            String[] a = Arrays.toString(e.getStackTrace()).split(",");
+            for (String z : a) {
+                System.out.println(z);
+            }
+//            System.out.print(Arrays.toString(e.getStackTrace()));
         }
     }
 
