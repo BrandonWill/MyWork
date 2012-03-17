@@ -11,7 +11,7 @@ import java.io.*;
 import java.util.*;
 import javax.swing.*;
 
-@ScriptManifest(authors = { "Dwarfeh" }, name = "Dwarfeh's Firemaker", version = 1.2, description = "I MAKEITY THE FIRE",  category = "Firemaking")
+@ScriptManifest(authors = { "Dwarfeh" }, name = "Dwarfeh's Firemaker", version = 1.3, description = "I MAKEITY THE FIRE",  category = "Firemaking")
 public class DwarfehFiremaker extends Script {
     private String STATE;
 
@@ -25,7 +25,7 @@ public class DwarfehFiremaker extends Script {
     private Color[] log = { new Color(78, 58, 34), new Color(111, 84, 49), new Color(54, 48, 17),
             new Color(76, 49, 10), new Color(62, 45, 9)}; //0= normal, 1= oak, 2= willow, 3= maple, 4= yew, 5= magic
     //TODO Get a members acc for Magic color
-    private Color bankIcon = new Color(102, 78, 13);
+    private Color bankIcon = new Color(238, 210, 36);
 
     private double[] xpPerLog = {40, 60, 90, 135, 202.5, 303.8};
 
@@ -49,6 +49,7 @@ public class DwarfehFiremaker extends Script {
     private volatile boolean run = true;
     private int startingXP;
     private volatile int gained;
+    private boolean checked = false;
     private int missing;
     Rectangle loggedOut = new Rectangle(145, 70, 116, 20);
 
@@ -65,9 +66,6 @@ public class DwarfehFiremaker extends Script {
         toggleXPDisplay();
         findXP.start();
         login.start();
-        log("Center Color at where maple log should be at slot 2 is: " +Inventory.getSlotAt(1).getCenterColor());
-        log("Is it determined Maple: " +areColorsClose(Inventory.getSlotAt(1).getCenterColor(), log[3], 15));
-        log("Is it a tinderbox: " +areColorsClose(Inventory.getSlotAt(1).getCenterColor(), tinderbox, 5));
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 ui = new UserInterface();
@@ -75,7 +73,9 @@ public class DwarfehFiremaker extends Script {
             }
         }
         );
-
+        log("Center Color at where maple log should be at slot 2 is: " + Inventory.getSlotAt(1).getCenterColor());
+        log("Is it determined your log: " +areColorsClose(Inventory.getSlotAt(1).getCenterColor(), log[logChosen], 5));
+        log("Is it a tinderbox: " +areColorsClose(Inventory.getSlotAt(1).getCenterColor(), tinderbox, 5));
         return true;
     }
 
@@ -91,9 +91,39 @@ public class DwarfehFiremaker extends Script {
     @Override
     public int loop() {
         try {
-            if (mouseSpeed == 0){
+            if (mouseSpeed == 0) {
                 return 300;
             }
+            if (mouseSpeed > 0 && !checked) {
+                final boolean[] optionWasChosen = {false};
+                if (!areColorsClose(Inventory.getSlotAt(1).getCenterColor(), log[logChosen], 5) && getAmount(log[logChosen]) == 0) {
+                    
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            JFrame frame = new JFrame();
+                            String message = "The log chosen does not match. \n" +
+                                    "The color that's supposed to be there is now drawn \n" +
+                                    "Would you like to keep this color?";
+                            int answer = JOptionPane.showConfirmDialog(frame, message);
+                            if (answer == JOptionPane.YES_OPTION) {
+                                optionWasChosen[0] = true;
+                                log[logChosen] = Inventory.getSlotAt(1).getCenterColor();
+                            } else if (answer == JOptionPane.NO_OPTION || answer == JOptionPane.CANCEL_OPTION) {
+                                optionWasChosen[0] = true;
+                                log("No idea what the fuck I'm supposed to do. Stopping");
+                                ScriptManager.getCurrent().stopScript();
+                            }
+                        }
+                    }
+                    );
+                    while (!optionWasChosen[0]) {
+                        STATE = "Waiting on option to be chosen";
+                        sleep(400);
+                    }
+                }
+                checked = true;
+            }
+
             if (!xpIsThere()) {
                 toggleXPDisplay();
             }
@@ -103,6 +133,7 @@ public class DwarfehFiremaker extends Script {
                     if (!standingOnFire()) {
                         STATE = "Burning logs";
                         if (logsLit > 0 && logWasLit() || logsLit == 0) {
+                            counter = 0;
                             burnLog();
                         }
                     } else {
@@ -123,6 +154,8 @@ public class DwarfehFiremaker extends Script {
                         walkToBank();
                     }
                 }
+            } else {
+                STATE = "Can't find tinderbox";
             }
             antiBan();
         }    catch (Exception ignored) {}
@@ -177,7 +210,7 @@ public class DwarfehFiremaker extends Script {
     }
 
     private Point BankIconOnMap() {
-        return getRandomPoint(bankIcon, 0.09D, 0, 75, middleMiniMap);
+        return getRandomPoint(bankIcon, 0.005D, 0, 75, middleMiniMap);
     }
 
     private void openBank() {
@@ -216,7 +249,7 @@ public class DwarfehFiremaker extends Script {
     }
 
     private boolean nearBank() {
-        return colorIsInBounds(banker, 0.07D, 250);
+        return colorIsInBounds(banker, 0.04D, 250);
     }
 
     private boolean colorIsInBounds(Color color, double tolerance, double maxDist) {
@@ -255,6 +288,8 @@ public class DwarfehFiremaker extends Script {
                 double dist = Calc.getDistanceBetween(randomPointGuess, mid);
                 if (dist > minDist && dist < maxDist) {
                     randomPoint = randomPointGuess;
+                } else {
+                    break;
                 }
             } catch (Throwable ignored) { }
         }
@@ -285,6 +320,7 @@ public class DwarfehFiremaker extends Script {
         }
     }
 
+    int counter = 0;
     public boolean logWasLit() {
         if (logsLit*xpPerLog[logChosen] != gained) {
             STATE = "Looking for a missing log...";
@@ -293,9 +329,10 @@ public class DwarfehFiremaker extends Script {
                 STATE = "Missing log not found!";
                 missing++;
                 logsLit =  gained/ (int) xpPerLog[logChosen];
+                counter++;
             }
         }
-        return logsLit*xpPerLog[logChosen] == gained;
+        return counter > 5 || logsLit * xpPerLog[logChosen] == gained;
     }
 
     Thread findXP = new Thread(new Runnable() {
@@ -318,9 +355,9 @@ public class DwarfehFiremaker extends Script {
                             }
                         }
                     }
-//                    try {
-//                        sleep(random(500, 800));
-//                    } catch(Throwable ignored) { }
+                    try {
+                        sleep(random(500, 800));
+                    } catch(Throwable ignored) { }
                 }
             } catch (Throwable e) {
                 String[] a = Arrays.toString(e.getStackTrace()).split(",");
@@ -458,7 +495,7 @@ public class DwarfehFiremaker extends Script {
                     g.setColor(Color.BLUE);
                     g.drawRect(a.getBounds().x, a.getBounds().y, a.getBounds().width, a.getBounds().height);
                 }
-                if (areColorsClose(a.getCenterColor(), log[logChosen], 15)) {
+                if (areColorsClose(a.getCenterColor(), log[logChosen], 5)) {
                     g.setColor(Color.PINK);
                     g.drawRect(a.getBounds().x, a.getBounds().y, a.getBounds().width, a.getBounds().height);
                 }

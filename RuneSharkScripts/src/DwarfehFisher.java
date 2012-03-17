@@ -220,6 +220,10 @@ public class DwarfehFisher extends Script {
                 sleep(1000);
             }
 
+            if (!xpIsThere()) {
+                toggleXPDisplay();
+            }
+
             switch (state) {
 
                 case LOOKING_FOR_SPOT:
@@ -494,6 +498,11 @@ public class DwarfehFisher extends Script {
             Mouse.click(random(532, 534), random(60, 62));
             sleep(random(600, 800));
         }
+    }
+
+    private boolean xpIsThere() {
+        String text = RSText.getOptionsText();
+        return text.substring(text.length()-4).contains("-l-i");
     }
 
     @Override
