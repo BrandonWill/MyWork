@@ -7,6 +7,7 @@ import java.awt.*;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.ArrayList;
 
 /**
  * Created by IntelliJ IDEA.
@@ -136,6 +137,54 @@ class NOTREALCLASS_Inventory {
         private Slot(int index,Rectangle bounds) {
             this.index = index;
             this.bounds = bounds;
+        }
+
+        public Point[] getModel() {
+            ArrayList<Point> list = new ArrayList<Point>();
+            Rectangle slotRect = this.bounds;
+            for (int i = 0; i < slotRect.getWidth(); i++) {
+                for (int j = 0; j < slotRect.getHeight(); j++) { //
+                    if(!isEmpty(new Point(slotRect.x + i, slotRect.y + j))) { //&&
+                        list.add(new Point(slotRect.x + i, slotRect.y + j));
+                    }
+                }
+            }
+            Point p[] = new Point[list.size()];
+            for (int i = 0; i < p.length; i++) {
+                p[i] = list.get(i);
+            }
+            return p;
+        }
+
+        private boolean isEmpty(Point p) {
+            if (Inventory.open()) {
+                final Color pointColor = ColorUtil.getColor(p);
+
+                final int min_red = 63;
+                final int max_red = 74;
+                final int min_green = 53;
+                final int max_green = 68;
+                final int min_blue = 44;
+                final int max_blue = 58;
+                if (pointColor != null) {
+                    final int center_red = pointColor.getRed();
+                    final int center_green = pointColor.getGreen();
+                    final int center_blue = pointColor.getBlue();
+                    if (center_red >= min_red && center_red <= max_red) {
+                        if (center_green >= min_green && center_green <= max_green) {
+                            if (center_blue >= min_blue && center_blue <= max_blue) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        public Point getPointInModel() {
+            Point[] b = getModel();
+            return b[MethodProvider.random(0, b.length)];
         }
     }
 
